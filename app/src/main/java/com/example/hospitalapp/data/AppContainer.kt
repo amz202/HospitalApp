@@ -1,22 +1,24 @@
-package com.example.hospitalapp.network.data
+package com.example.hospitalapp.data
 
 import com.example.hospitalapp.network.ApiService
-import com.example.hospitalapp.network.data.repositories.AdminRepository
-import com.example.hospitalapp.network.data.repositories.AdminRepositoryImpl
-import com.example.hospitalapp.network.data.repositories.AppointmentRepository
-import com.example.hospitalapp.network.data.repositories.AppointmentRepositoryImpl
-import com.example.hospitalapp.network.data.repositories.DoctorRepository
-import com.example.hospitalapp.network.data.repositories.DoctorRepositoryImpl
-import com.example.hospitalapp.network.data.repositories.FeedbackRepository
-import com.example.hospitalapp.network.data.repositories.FeedbackRepositoryImpl
-import com.example.hospitalapp.network.data.repositories.MedicationRepository
-import com.example.hospitalapp.network.data.repositories.MedicationRepositoryImpl
-import com.example.hospitalapp.network.data.repositories.PatientRepository
-import com.example.hospitalapp.network.data.repositories.PatientRepositoryImpl
-import com.example.hospitalapp.network.data.repositories.ReportRepository
-import com.example.hospitalapp.network.data.repositories.ReportRepositoryImpl
-import com.example.hospitalapp.network.data.repositories.VitalsRepository
-import com.example.hospitalapp.network.data.repositories.VitalsRepositoryImpl
+import com.example.hospitalapp.data.repositories.AdminRepository
+import com.example.hospitalapp.data.repositories.AdminRepositoryImpl
+import com.example.hospitalapp.data.repositories.AppointmentRepository
+import com.example.hospitalapp.data.repositories.AppointmentRepositoryImpl
+import com.example.hospitalapp.data.repositories.DoctorRepository
+import com.example.hospitalapp.data.repositories.DoctorRepositoryImpl
+import com.example.hospitalapp.data.repositories.FeedbackRepository
+import com.example.hospitalapp.data.repositories.FeedbackRepositoryImpl
+import com.example.hospitalapp.data.repositories.MedicationRepository
+import com.example.hospitalapp.data.repositories.MedicationRepositoryImpl
+import com.example.hospitalapp.data.repositories.PatientRepository
+import com.example.hospitalapp.data.repositories.PatientRepositoryImpl
+import com.example.hospitalapp.data.repositories.ReportRepository
+import com.example.hospitalapp.data.repositories.ReportRepositoryImpl
+import com.example.hospitalapp.data.repositories.UserRepository
+import com.example.hospitalapp.data.repositories.UserRepositoryImpl
+import com.example.hospitalapp.data.repositories.VitalsRepository
+import com.example.hospitalapp.data.repositories.VitalsRepositoryImpl
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
@@ -31,6 +33,7 @@ interface AppContainer {
     val medicationRepository : MedicationRepository
     val vitalsRepository: VitalsRepository
     val reportRepository: ReportRepository
+    val userRepository: UserRepository
 }
 
 class DefaultAppContainer:AppContainer {
@@ -75,5 +78,9 @@ class DefaultAppContainer:AppContainer {
 
     override val vitalsRepository: VitalsRepository by lazy {
         VitalsRepositoryImpl(apiService)
+    }
+
+    override val userRepository: UserRepository by lazy {
+        UserRepositoryImpl(apiService)
     }
 }

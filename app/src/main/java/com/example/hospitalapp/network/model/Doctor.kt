@@ -14,9 +14,9 @@ data class DoctorResponse(
     val availableForEmergency: Boolean,
     val active: Boolean,
     val createdAt: String,
-    val appointments: List<AppointmentResponse>,
-    val feedbacks: List<FeedbackResponse>,
-    val prescribedMedications: List<MedicationResponse>
+    val appointments: List<AppointmentResponse> = emptyList(),
+    val feedbacks: List<FeedbackResponse> = emptyList(),
+    val prescribedMedications: List<MedicationResponse> = emptyList()
 )
 
 data class DoctorRequest(
@@ -30,5 +30,5 @@ data class DoctorRequest(
     val qualification: String,
     val experienceYears: Int,
     val consultationFee: Double,
-    val availableForEmergency: Boolean
+    val availableForEmergency: Boolean = true
 )

@@ -1,199 +1,218 @@
 package com.example.hospitalapp.network
 
-import com.example.hospitalapp.network.model.AdminRequest
-import com.example.hospitalapp.network.model.AdminResponse
-import com.example.hospitalapp.network.model.AppointmentRequest
-import com.example.hospitalapp.network.model.AppointmentResponse
-import com.example.hospitalapp.network.model.AppointmentStatus
-import com.example.hospitalapp.network.model.DoctorRequest
-import com.example.hospitalapp.network.model.DoctorResponse
-import com.example.hospitalapp.network.model.FeedbackRequest
-import com.example.hospitalapp.network.model.FeedbackResponse
-import com.example.hospitalapp.network.model.MedicationRequest
-import com.example.hospitalapp.network.model.MedicationResponse
-import com.example.hospitalapp.network.model.PatientRequest
-import com.example.hospitalapp.network.model.PatientResponse
-import com.example.hospitalapp.network.model.ReportRequest
-import com.example.hospitalapp.network.model.ReportResponse
-import com.example.hospitalapp.network.model.VitalsRequest
-import com.example.hospitalapp.network.model.VitalsResponse
+import com.example.hospitalapp.network.model.*
 import okhttp3.MultipartBody
 import okhttp3.ResponseBody
-import retrofit2.http.Body
-import retrofit2.http.DELETE
-import retrofit2.http.GET
-import retrofit2.http.Multipart
-import retrofit2.http.POST
-import retrofit2.http.PUT
-import retrofit2.http.Part
-import retrofit2.http.Path
+import retrofit2.http.*
 
 interface ApiService {
-    // Patient endpoints
-    @GET("patients/{id}")
-    suspend fun getPatient(@Path("id") id: Long): PatientResponse
-
-    @GET("patients")
-    suspend fun getPatients(): List<PatientResponse>
-
-    @POST("patients")
-    suspend fun createPatient(@Body patient: PatientRequest): ResponseBody
-
-    @PUT("patients/{id}")
-    suspend fun updatePatient(
-        @Path("id") id: Long,
-        @Body patient: PatientRequest
-    ): ResponseBody
-
-    @DELETE("patients/{id}")
-    suspend fun deletePatient(@Path("id") id: Long): ResponseBody
-
     // Doctor endpoints
-    @GET("doctors/{id}")
-    suspend fun getDoctor(@Path("id") id: Long): DoctorResponse
+    @GET("api/doctors")
+    suspend fun getAllDoctors(): List<DoctorResponse>
 
-    @GET("doctors")
-    suspend fun getDoctors(): List<DoctorResponse>
+    @GET("api/doctors/{id}")
+    suspend fun getDoctorById(@Path("id") id: Long): DoctorResponse
 
-    @POST("doctors")
-    suspend fun createDoctor(@Body doctor: DoctorRequest): ResponseBody
+    @POST("api/doctors")
+    suspend fun createDoctor(@Body doctor: DoctorRequest): DoctorResponse
 
-    @PUT("doctors/{id}")
+    @PUT("api/doctors/{id}")
     suspend fun updateDoctor(
         @Path("id") id: Long,
         @Body doctor: DoctorRequest
-    ): ResponseBody
+    ): DoctorResponse
 
-    @DELETE("doctors/{id}")
-    suspend fun deleteDoctor(@Path("id") id: Long): ResponseBody
+    @DELETE("api/doctors/{id}")
+    suspend fun deleteDoctor(@Path("id") id: Long)
 
-    @GET("doctors/{id}/appointments")
-    suspend fun getDoctorAppointments(@Path("id") id: Long): List<AppointmentResponse>
+    @GET("api/doctors/{id}/patients")
+    suspend fun getDoctorPatients(@Path("id") doctorId: Long): List<PatientResponse>
+
+    @GET("api/doctors/specialization/{specialization}")
+    suspend fun getDoctorsBySpecialization(
+        @Path("specialization") specialization: String
+    ): List<DoctorResponse>
+
+    @GET("api/doctors/{id}/appointments")
+    suspend fun getDoctorAppointments(@Path("id") doctorId: Long): List<AppointmentResponse>
+
+    @PUT("api/doctors/{doctorId}/appointments/{appointmentId}/status")
+    suspend fun updateAppointmentStatus(
+        @Path("doctorId") doctorId: Long,
+        @Path("appointmentId") appointmentId: Long,
+        @Query("status") status: AppointmentStatus
+    ): AppointmentResponse
+
+    @POST("api/doctors/{doctorId}/appointments/{appointmentId}/medications")
+    suspend fun prescribeMedication(
+        @Path("doctorId") doctorId: Long,
+        @Path("appointmentId") appointmentId: Long,
+        @Body medication: MedicationRequest
+    ): MedicationResponse
+
+    @POST("api/doctors/{doctorId}/appointments/{appointmentId}/feedback")
+    suspend fun provideFeedback(
+        @Path("doctorId") doctorId: Long,
+        @Path("appointmentId") appointmentId: Long,
+        @Body feedback: FeedbackRequest
+    ): FeedbackResponse
+
+    // Patient endpoints
+    @GET("api/patients")
+    suspend fun getAllPatients(): List<PatientResponse>
+
+    @GET("api/patients/{id}")
+    suspend fun getPatientById(@Path("id") id: Long): PatientResponse
+
+    @POST("api/patients")
+    suspend fun createPatient(@Body patient: PatientRequest): PatientResponse
+
+    @PUT("api/patients/{id}")
+    suspend fun updatePatient(
+        @Path("id") id: Long,
+        @Body patient: PatientRequest
+    ): PatientResponse
+
+    @DELETE("api/patients/{id}")
+    suspend fun deletePatient(@Path("id") id: Long)
+
+    @GET("api/patients/{id}/vitals")
+    suspend fun getPatientVitals(@Path("id") patientId: Long): List<VitalsResponse>
+
+    @GET("api/patients/{id}/reports")
+    suspend fun getPatientReports(@Path("id") patientId: Long): List<ReportResponse>
+
+    @GET("api/patients/doctor/{doctorId}")
+    suspend fun getPatientsByDoctor(@Path("doctorId") doctorId: Long): List<PatientResponse>
 
     // Admin endpoints
-    @GET("admins/{id}")
-    suspend fun getAdmin(@Path("id") id: Long): AdminResponse
+    @GET("api/admins")
+    suspend fun getAllAdmins(): List<AdminResponse>
 
-    @GET("admins")
-    suspend fun getAdmins(): List<AdminResponse>
+    @GET("api/admins/{id}")
+    suspend fun getAdminById(@Path("id") id: Long): AdminResponse
 
-    @POST("admins")
-    suspend fun createAdmin(@Body admin: AdminRequest): ResponseBody
+    @POST("api/admins")
+    suspend fun createAdmin(@Body admin: AdminRequest): AdminResponse
 
-    @PUT("admins/{id}")
+    @PUT("api/admins/{id}")
     suspend fun updateAdmin(
         @Path("id") id: Long,
         @Body admin: AdminRequest
-    ): ResponseBody
+    ): AdminResponse
 
-    @DELETE("admins/{id}")
-    suspend fun deleteAdmin(@Path("id") id: Long): ResponseBody
+    @DELETE("api/admins/{id}")
+    suspend fun deleteAdmin(@Path("id") id: Long)
+
+    // Admin management endpoints
+    @GET("api/admins/users")
+    suspend fun getAllUsers(): List<UserResponse>
+
+    @GET("api/admins/users/{id}")
+    suspend fun getUserById(@Path("id") id: Long): UserResponse
+
+    @DELETE("api/admins/users/{id}")
+    suspend fun deleteUser(@Path("id") id: Long)
+
+    @GET("api/admins/stats/patients-count")
+    suspend fun getTotalPatientsCount(): Long
+
+    @GET("api/admins/stats/doctors-count")
+    suspend fun getTotalDoctorsCount(): Long
+
+    @GET("api/admins/stats/appointments-count")
+    suspend fun getTotalAppointmentsCount(): Long
+
+    @GET("api/admins/stats/pending-appointments-count")
+    suspend fun getPendingAppointmentsCount(): Long
 
     // Appointment endpoints
-    @GET("appointments/{id}")
-    suspend fun getAppointment(@Path("id") id: Long): AppointmentResponse
+    @GET("api/appointments")
+    suspend fun getAllAppointments(): List<AppointmentResponse>
 
-    @GET("appointments")
-    suspend fun getAppointments(): List<AppointmentResponse>
+    @GET("api/appointments/{id}")
+    suspend fun getAppointmentById(@Path("id") id: Long): AppointmentResponse
 
-    @POST("appointments")
-    suspend fun createAppointment(@Body appointment: AppointmentRequest): ResponseBody
+    @POST("api/appointments")
+    suspend fun createAppointment(@Body appointment: AppointmentRequest): AppointmentResponse
 
-    @PUT("appointments/{id}/status")
+    @PUT("api/appointments/{id}/status")
     suspend fun updateAppointmentStatus(
         @Path("id") id: Long,
         @Body status: AppointmentStatus
-    ): ResponseBody
+    ): AppointmentResponse
 
-    @GET("patients/{id}/appointments")
-    suspend fun getPatientAppointments(@Path("id") id: Long): List<AppointmentResponse>
+    @DELETE("api/appointments/{id}")
+    suspend fun deleteAppointment(@Path("id") id: Long)
 
-    // Vitals endpoints
-    @GET("vitals/{id}")
-    suspend fun getVitals(@Path("id") id: Long): VitalsResponse
+    // Report endpoints
+    @GET("api/reports")
+    suspend fun getAllReports(): List<ReportResponse>
 
-    @GET("patients/{id}/vitals")
-    suspend fun getPatientVitals(@Path("id") id: Long): List<VitalsResponse>
+    @GET("api/reports/{id}")
+    suspend fun getReportById(@Path("id") id: Long): ReportResponse
 
-    @POST("vitals")
-    suspend fun createVitals(@Body vitals: VitalsRequest): ResponseBody
+    @POST("api/reports")
+    suspend fun createReport(@Body report: ReportRequest): ReportResponse
 
-    @GET("patients/{id}/vitals/latest")
-    suspend fun getLatestVitals(@Path("id") id: Long): VitalsResponse
-
-    @GET("patients/{id}/vitals/critical")
-    suspend fun getCriticalVitals(@Path("id") id: Long): List<VitalsResponse>
+    @GET("api/reports/patient/{patientId}")
+    suspend fun getReportsByPatient(@Path("patientId") patientId: Long): List<ReportResponse>
 
     // Medication endpoints
-    @GET("medications/{id}")
-    suspend fun getMedication(@Path("id") id: Long): MedicationResponse
+    @GET("api/medications")
+    suspend fun getAllMedications(): List<MedicationResponse>
 
-    @GET("medications")
-    suspend fun getMedications(): List<MedicationResponse>
+    @GET("api/medications/{id}")
+    suspend fun getMedicationById(@Path("id") id: Long): MedicationResponse
 
-    @POST("medications")
-    suspend fun createMedication(@Body medication: MedicationRequest): ResponseBody
+    @POST("api/medications")
+    suspend fun createMedication(@Body medication: MedicationRequest): MedicationResponse
 
-    @PUT("medications/{id}")
+    @PUT("api/medications/{id}")
     suspend fun updateMedication(
         @Path("id") id: Long,
         @Body medication: MedicationRequest
+    ): MedicationResponse
+
+    @GET("api/medications/appointment/{appointmentId}")
+    suspend fun getMedicationsByAppointment(@Path("appointmentId") appointmentId: Long): List<MedicationResponse>
+
+    // Vitals endpoints
+    @GET("api/vitals/{id}")
+    suspend fun getVitalsById(@Path("id") id: Long): VitalsResponse
+
+    @POST("api/vitals")
+    suspend fun createVitals(@Body vitals: VitalsRequest): VitalsResponse
+
+    @GET("api/patients/{id}/vitals/latest")
+    suspend fun getLatestVitals(@Path("id") patientId: Long): VitalsResponse
+
+    @GET("api/patients/{id}/vitals/critical")
+    suspend fun getCriticalVitals(@Path("id") patientId: Long): List<VitalsResponse>
+
+    @Multipart
+    @POST("api/patients/{id}/vitals/upload")
+    suspend fun uploadVitalsCSV(
+        @Path("id") patientId: Long,
+        @Part file: MultipartBody.Part
     ): ResponseBody
 
-    @GET("patients/{id}/medications")
-    suspend fun getPatientMedications(@Path("id") id: Long): List<MedicationResponse>
-
-    @GET("patients/{id}/medications/active")
-    suspend fun getActiveMedications(@Path("id") id: Long): List<MedicationResponse>
-
-    @GET("doctors/{id}/medications")
-    suspend fun getDoctorPrescribedMedications(@Path("id") id: Long): List<MedicationResponse>
-
     // Feedback endpoints
-    @GET("feedback/{id}")
-    suspend fun getFeedback(@Path("id") id: Long): FeedbackResponse
+    @GET("api/feedback/{id}")
+    suspend fun getFeedbackById(@Path("id") id: Long): FeedbackResponse
 
-    @POST("feedback")
-    suspend fun createFeedback(@Body feedback: FeedbackRequest): ResponseBody
+    @POST("api/feedback")
+    suspend fun createFeedback(@Body feedback: FeedbackRequest): FeedbackResponse
 
-    @PUT("feedback/{id}")
+    @PUT("api/feedback/{id}")
     suspend fun updateFeedback(
         @Path("id") id: Long,
         @Body feedback: FeedbackRequest
-    ): ResponseBody
+    ): FeedbackResponse
 
-    @GET("doctors/{id}/feedback")
+    @GET("api/doctors/{id}/feedback")
     suspend fun getDoctorFeedback(@Path("id") id: Long): List<FeedbackResponse>
 
-    @GET("patients/{id}/feedback")
+    @GET("api/patients/{id}/feedback")
     suspend fun getPatientFeedback(@Path("id") id: Long): List<FeedbackResponse>
-
-    // Report endpoints
-    @GET("reports/{id}")
-    suspend fun getReport(@Path("id") id: Long): ReportResponse
-
-    @POST("reports")
-    suspend fun createReport(@Body report: ReportRequest): ResponseBody
-
-    @GET("patients/{id}/reports")
-    suspend fun getPatientReports(@Path("id") id: Long): List<ReportResponse>
-
-    @GET("doctors/{id}/reports")
-    suspend fun getDoctorReports(@Path("id") id: Long): List<ReportResponse>
-
-    // File upload for reports
-    @Multipart
-    @POST("reports/{id}/upload")
-    suspend fun uploadReportFile(
-        @Path("id") id: Long,
-        @Part file: MultipartBody.Part
-    ): ResponseBody
-
-    // Vitals CSV upload
-    @Multipart
-    @POST("patients/{id}/vitals/upload")
-    suspend fun uploadVitalsCSV(
-        @Path("id") id: Long,
-        @Part file: MultipartBody.Part
-    ): ResponseBody
 }

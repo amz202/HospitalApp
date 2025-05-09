@@ -1,4 +1,4 @@
-package com.example.hospitalapp.network.data.repositories
+package com.example.hospitalapp.data.repositories
 
 import com.example.hospitalapp.network.ApiService
 import com.example.hospitalapp.network.model.AdminRequest

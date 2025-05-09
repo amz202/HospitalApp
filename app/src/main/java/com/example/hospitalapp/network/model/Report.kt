@@ -8,10 +8,10 @@ data class ReportResponse(
     val doctor: DoctorResponse?,
     val summary: String,
     val reportType: String,
-    val vitalsList: List<VitalsResponse>,
-    val medications: List<MedicationResponse>,
-    val feedbacks: List<FeedbackResponse>,
-    val appointments: List<AppointmentResponse>,
+    val vitals: VitalsResponse?,
+    val medications: List<MedicationResponse> = emptyList(),
+    val feedback: FeedbackResponse?,
+    val appointment: AppointmentResponse?,
     val filePath: String?,
     val timePeriodStart: String?,
     val timePeriodEnd: String?
@@ -23,10 +23,10 @@ data class ReportRequest(
     val doctorId: Long?,
     val summary: String,
     val reportType: String,
-    val vitalsIds: List<Long>,
-    val medicationIds: List<Long>,
-    val feedbackIds: List<Long>,
-    val appointmentIds: List<Long>,
-    val timePeriodStart: String?,
-    val timePeriodEnd: String?
+    val appointmentId: Long,
+    val vitalsId: Long? = null,
+    val medicationIds: List<Long> = emptyList(),
+    val feedbackId: Long? = null,
+    val timePeriodStart: String? = null,
+    val timePeriodEnd: String? = null
 )

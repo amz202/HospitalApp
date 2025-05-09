@@ -7,12 +7,13 @@ data class MedicationResponse(
     val frequency: String,
     val startDate: String,
     val endDate: String,
-    val instructions: String?,
-    val doctor: DoctorResponse,
-    val patient: PatientResponse,
-    val appointment: AppointmentResponse?,
-    val prescribedAt: String,
-    val active: Boolean
+    val instructions: String,
+    val patientId: Long,
+    val doctorId: Long,
+    val appointmentId: Long,
+    val active: Boolean,
+    val createdAt: String,
+    val updatedAt: String
 )
 
 data class MedicationRequest(
@@ -21,8 +22,8 @@ data class MedicationRequest(
     val frequency: String,
     val startDate: String,
     val endDate: String,
-    val instructions: String?,
-    val doctorId: Long,
+    val instructions: String,
     val patientId: Long,
-    val appointmentId: Long?
+    val doctorId: Long,
+    val appointmentId: Long
 )

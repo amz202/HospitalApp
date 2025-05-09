@@ -9,13 +9,14 @@ data class PatientResponse(
     val dateOfBirth: String,
     val bloodGroup: String,
     val emergencyContact: String,
-    val medicalHistory: String,
     val allergies: String,
     val active: Boolean,
     val createdAt: String,
-    val vitalsList: List<VitalsResponse>,
-    val appointments: List<AppointmentResponse>,
-    val medications: List<MedicationResponse>
+    val primaryDoctor: DoctorResponse?,
+    val vitalsList: List<VitalsResponse> = emptyList(),
+    val appointments: List<AppointmentResponse> = emptyList(),
+    val medications: List<MedicationResponse> = emptyList(),
+    val reports: List<ReportResponse> = emptyList()
 )
 
 data class PatientRequest(
@@ -27,6 +28,6 @@ data class PatientRequest(
     val dateOfBirth: String,
     val bloodGroup: String,
     val emergencyContact: String,
-    val medicalHistory: String,
-    val allergies: String
+    val allergies: String,
+    val primaryDoctorId: Long?
 )
