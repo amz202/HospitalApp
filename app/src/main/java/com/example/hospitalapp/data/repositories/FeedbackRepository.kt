@@ -11,10 +11,10 @@ interface FeedbackRepository {
     suspend fun getFeedbackByAppointment(appointmentId: Long): FeedbackResponse
     suspend fun getFeedbackByDoctor(doctorId: Long): List<FeedbackResponse>
     suspend fun getFeedbackByPatient(patientId: Long): List<FeedbackResponse>
-    suspend fun createFeedback(feedback: FeedbackRequest): ResponseBody
     suspend fun updateFeedback(id: Long, feedback: FeedbackRequest): ResponseBody
     suspend fun hasFeedback(appointmentId: Long): Boolean
     suspend fun getAppointmentsWithoutFeedback(doctorId: Long): List<AppointmentResponse>
+    suspend fun createFeedback(doctorId: Long, appointmentId: Long, feedback: FeedbackRequest): FeedbackResponse
 }
 
 class FeedbackRepositoryImpl(private val apiService: ApiService) : FeedbackRepository {
@@ -30,8 +30,12 @@ class FeedbackRepositoryImpl(private val apiService: ApiService) : FeedbackRepos
     override suspend fun getFeedbackByPatient(patientId: Long): List<FeedbackResponse> =
         apiService.getFeedbackByPatient(patientId)
 
-    override suspend fun createFeedback(feedback: FeedbackRequest): ResponseBody =
-        apiService.createFeedback(feedback)
+    override suspend fun createFeedback(
+        doctorId: Long,
+        appointmentId: Long,
+        feedback: FeedbackRequest
+    ): FeedbackResponse =
+        apiService.provideFeedback(doctorId, appointmentId, feedback)
 
     override suspend fun updateFeedback(id: Long, feedback: FeedbackRequest): ResponseBody =
         apiService.updateFeedback(id, feedback)

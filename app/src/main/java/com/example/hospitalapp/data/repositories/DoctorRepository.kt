@@ -4,7 +4,9 @@ import com.example.hospitalapp.network.ApiService
 import com.example.hospitalapp.network.model.AppointmentResponse
 import com.example.hospitalapp.network.model.DoctorRequest
 import com.example.hospitalapp.network.model.DoctorResponse
+import com.example.hospitalapp.network.model.FeedbackRequest
 import com.example.hospitalapp.network.model.FeedbackResponse
+import com.example.hospitalapp.network.model.MedicationRequest
 import com.example.hospitalapp.network.model.MedicationResponse
 import com.example.hospitalapp.network.model.PatientResponse
 import com.example.hospitalapp.network.model.ReportResponse
@@ -19,6 +21,17 @@ interface DoctorRepository {
     suspend fun getDoctorPatients(id: Long): List<PatientResponse>
     suspend fun getDoctorsBySpecialization(specialization: String): List<DoctorResponse>
     suspend fun getDoctorAppointments(id: Long): List<AppointmentResponse>
+    suspend fun prescribeMedication(
+        doctorId: Long,
+        appointmentId: Long,
+        medication: MedicationRequest
+    ): MedicationResponse
+
+    suspend fun provideFeedback(
+        doctorId: Long,
+        appointmentId: Long,
+        feedback: FeedbackRequest
+    ): FeedbackResponse
 }
 
 class DoctorRepositoryImpl(private val apiService: ApiService) : DoctorRepository {
@@ -45,4 +58,18 @@ class DoctorRepositoryImpl(private val apiService: ApiService) : DoctorRepositor
 
     override suspend fun getDoctorAppointments(id: Long): List<AppointmentResponse> =
         apiService.getDoctorAppointments(id)
+
+    override suspend fun prescribeMedication(
+        doctorId: Long,
+        appointmentId: Long,
+        medication: MedicationRequest
+    ): MedicationResponse =
+        apiService.prescribeMedication(doctorId, appointmentId, medication)
+
+    override suspend fun provideFeedback(
+        doctorId: Long,
+        appointmentId: Long,
+        feedback: FeedbackRequest
+    ): FeedbackResponse =
+        apiService.provideFeedback(doctorId, appointmentId, feedback)
 }

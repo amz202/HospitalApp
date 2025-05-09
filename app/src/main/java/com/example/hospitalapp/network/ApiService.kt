@@ -104,9 +104,6 @@ interface ApiService {
     @GET("api/appointments/doctor/{doctorId}/upcoming")
     suspend fun getUpcomingAppointmentsByDoctor(@Path("doctorId") doctorId: Long): List<AppointmentResponse>
 
-    @PUT("api/appointments/{id}/status")
-    suspend fun updateAppointmentStatus(@Path("id") id: Long, @Query("status") status: AppointmentStatus): AppointmentResponse
-
     // Medication Management
     @GET("api/medications")
     suspend fun getMedications(): List<MedicationResponse>
@@ -194,4 +191,24 @@ interface ApiService {
         @Query("start") startDate: String,
         @Query("end") endDate: String
     ): List<ReportResponse>
+
+    @POST("api/doctors/{doctorId}/appointments/{appointmentId}/medications")
+    suspend fun prescribeMedication(
+        @Path("doctorId") doctorId: Long,
+        @Path("appointmentId") appointmentId: Long,
+        @Body medication: MedicationRequest
+    ): MedicationResponse
+
+    @POST("api/doctors/{doctorId}/appointments/{appointmentId}/feedback")
+    suspend fun provideFeedback(
+        @Path("doctorId") doctorId: Long,
+        @Path("appointmentId") appointmentId: Long,
+        @Body feedback: FeedbackRequest
+    ): FeedbackResponse
+
+    @PUT("api/appointments/{id}/status")
+    suspend fun updateAppointmentStatus(
+        @Path("id") id: Long,
+        @Query("status") status: AppointmentStatus
+    ): AppointmentResponse
 }
