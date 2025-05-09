@@ -2,8 +2,8 @@ package com.example.hospitalapp.network.model
 
 data class AppointmentResponse(
     val id: Long,
-    val patientId: Long,
-    val doctorId: Long,
+    val patient: PatientResponse,
+    val doctor: DoctorResponse,
     val scheduledTime: String,
     val type: AppointmentType,
     val status: AppointmentStatus,
@@ -22,10 +22,10 @@ data class AppointmentRequest(
     val reason: String
 )
 
-enum class AppointmentType {
-    IN_PERSON, VIDEO_CONSULTATION, EMERGENCY
+enum class AppointmentStatus {
+    REQUESTED, APPROVED, DECLINED, COMPLETED, CANCELLED
 }
 
-enum class AppointmentStatus {
-    PENDING, CONFIRMED, CANCELLED, COMPLETED
+enum class AppointmentType {
+    IN_PERSON, VIDEO_CONSULTATION
 }

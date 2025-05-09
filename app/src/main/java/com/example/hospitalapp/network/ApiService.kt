@@ -215,4 +215,25 @@ interface ApiService {
 
     @GET("api/patients/{id}/feedback")
     suspend fun getPatientFeedback(@Path("id") id: Long): List<FeedbackResponse>
+
+    @GET("api/appointments/status")
+    suspend fun getAppointmentsByStatus(@Query("status") status: AppointmentStatus): List<AppointmentResponse>
+
+    @GET("api/appointments/patient/{patientId}/upcoming")
+    suspend fun getUpcomingAppointmentsByPatient(@Path("patientId") patientId: Long): List<AppointmentResponse>
+
+    @GET("api/appointments/doctor/{doctorId}/upcoming")
+    suspend fun getUpcomingAppointmentsByDoctor(@Path("doctorId") doctorId: Long): List<AppointmentResponse>
+
+    @GET("api/appointments/today")
+    suspend fun getTodaysAppointments(): List<AppointmentResponse>
+
+    @GET("api/medications/patient/{patientId}")
+    suspend fun getMedicationsByPatient(@Path("patientId") patientId: Long): List<MedicationResponse>
+
+    @POST("api/patients/{id}/vitals")
+    suspend fun addVitals(
+        @Path("id") patientId: Long,
+        @Body vitals: VitalsRequest
+    ): VitalsResponse
 }
