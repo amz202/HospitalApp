@@ -63,6 +63,11 @@ dependencies {
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
 
+    implementation ("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.7")
+    implementation ("androidx.lifecycle:lifecycle-runtime-compose:2.8.7")
+    implementation ("androidx.navigation:navigation-compose:2.8.7")
+    implementation ("io.coil-kt:coil-compose:2.4.0")
+
     // Architecture Components
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0")
     implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.7.0")
@@ -88,4 +93,5 @@ dependencies {
 
     // Charts for Vitals
     implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
+
 }
