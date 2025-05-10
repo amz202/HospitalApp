@@ -1,106 +1,40 @@
 package com.example.hospitalapp.ui.patient
 
-import android.net.Uri
-import android.os.Build
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import com.example.hospitalapp.ui.viewModels.VitalsViewModel
 import com.example.hospitalapp.ui.viewModels.BaseUiState
-import com.example.hospitalapp.network.model.VitalsRequest
 import com.example.hospitalapp.network.model.VitalsResponse
-import java.io.BufferedReader
-import java.io.InputStreamReader
+import com.example.hospitalapp.network.model.VitalsRequest
+import com.example.hospitalapp.ui.navigation.VitalsDetailNav
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
-@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun VitalsSection(
     patientId: Long,
     vitalsViewModel: VitalsViewModel,
-    onNavigateToVitalsDetail: () -> Unit,
+    navController: NavController,
     modifier: Modifier = Modifier
 ) {
-    val context = LocalContext.current
-    var showCsvError by remember { mutableStateOf(false) }
-    var errorMessage by remember { mutableStateOf("") }
     val vitalsState = vitalsViewModel.patientVitalsUiState
-    val currentDateTime = remember {
-        LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
-    }
 
-    // File picker for CSV upload
-    val csvLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent()
-    ) { uri: Uri? ->
-        uri?.let {
-            try {
-                context.contentResolver.openInputStream(uri)?.use { inputStream ->
-                    val reader = BufferedReader(InputStreamReader(inputStream))
-                    val headerLine = reader.readLine()
-                    val headers = headerLine.split(",")
-
-                    val expectedHeaders = listOf(
-                        "heartRate",
-                        "systolicPressure",
-                        "diastolicPressure",
-                        "temperature",
-                        "oxygenSaturation",
-                        "respiratoryRate",
-                        "bloodSugar"
-                    )
-
-                    if (!headers.containsAll(expectedHeaders)) {
-                        errorMessage = "Invalid CSV format. Expected headers: ${expectedHeaders.joinToString(", ")}"
-                        showCsvError = true
-                        return@let
-                    }
-
-                    reader.lineSequence()
-                        .map { line ->
-                            try {
-                                val values = line.split(",")
-                                val headerToValue = headers.zip(values).toMap()
-
-                                VitalsRequest(
-                                    patientId = patientId,
-                                    heartRate = headerToValue["heartRate"]?.toIntOrNull(),
-                                    systolicPressure = headerToValue["systolicPressure"]?.toIntOrNull(),
-                                    diastolicPressure = headerToValue["diastolicPressure"]?.toIntOrNull(),
-                                    temperature = headerToValue["temperature"]?.toDoubleOrNull(),
-                                    oxygenSaturation = headerToValue["oxygenSaturation"]?.toDoubleOrNull(),
-                                    respiratoryRate = headerToValue["respiratoryRate"]?.toIntOrNull(),
-                                    bloodSugar = headerToValue["bloodSugar"]?.toDoubleOrNull()
-                                )
-                            } catch (e: Exception) {
-                                null
-                            }
-                        }
-                        .filterNotNull()
-                        .forEach { vitalsRequest ->
-                            vitalsViewModel.createVitals(vitalsRequest)
-                        }
-                }
-            } catch (e: Exception) {
-                errorMessage = "Error processing CSV file: ${e.localizedMessage}"
-                showCsvError = true
-            }
-        }
+    LaunchedEffect(patientId) {
+        vitalsViewModel.getVitalsById(patientId)
     }
 
     Card(
         modifier = modifier.fillMaxWidth(),
-        onClick = onNavigateToVitalsDetail
+        onClick = {
+            navController.navigate(VitalsDetailNav(patientId = patientId))
+        }
     ) {
         Column(
             modifier = Modifier
@@ -116,13 +50,12 @@ fun VitalsSection(
                     text = "Vitals",
                     style = MaterialTheme.typography.titleLarge
                 )
-                IconButton(
-                    onClick = { csvLauncher.launch("text/csv") }
+                TextButton(
+                    onClick = {
+                        navController.navigate(VitalsDetailNav(patientId = patientId))
+                    }
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.Add,
-                        contentDescription = "Upload Vitals"
-                    )
+                    Text("View All")
                 }
             }
 
@@ -142,7 +75,30 @@ fun VitalsSection(
                             style = MaterialTheme.typography.bodyMedium
                         )
                     } else {
-                        VitalsList(vitals = vitals)
+                        val latestVitals = vitals.maxByOrNull { it.recordedAt }
+                        if (latestVitals != null) {
+                            VitalsSummary(latestVitals)
+
+                            if (vitals.size > 1) {
+                                Spacer(modifier = Modifier.height(16.dp))
+                                Text(
+                                    text = "Recent History",
+                                    style = MaterialTheme.typography.titleMedium
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Column(
+                                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    vitals
+                                        .sortedByDescending { it.recordedAt }
+                                        .drop(1)  // Skip the latest one as it's shown in summary
+                                        .take(2)  // Show only 2 recent records
+                                        .forEach { vital ->
+                                            VitalsHistoryItem(vital)
+                                        }
+                                }
+                            }
+                        }
                     }
                 }
                 is BaseUiState.Error -> {
@@ -155,109 +111,6 @@ fun VitalsSection(
             }
         }
     }
-
-    if (showCsvError) {
-        AlertDialog(
-            onDismissRequest = { showCsvError = false },
-            title = { Text("Error") },
-            text = { Text(errorMessage) },
-            confirmButton = {
-                TextButton(onClick = { showCsvError = false }) {
-                    Text("OK")
-                }
-            }
-        )
-    }
-}
-
-@Composable
-private fun VitalsList(
-    vitals: List<VitalsResponse>,
-    modifier: Modifier = Modifier
-) {
-    Column(
-        modifier = modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        // Latest Vitals Summary
-        val latestVitals = vitals.last()
-        VitalsSummary(latestVitals)
-
-        // Vitals History
-        Text(
-            text = "Recent History",
-            style = MaterialTheme.typography.titleMedium
-        )
-
-        vitals.takeLast(5).reversed().forEach { vital ->
-            VitalHistoryItem(vital)
-        }
-    }
-}
-
-@Composable
-private fun VitalHistoryItem(
-    vital: VitalsResponse,
-    modifier: Modifier = Modifier
-) {
-    Card(
-        modifier = modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant
-        )
-    ) {
-        Column(
-            modifier = Modifier
-                .padding(12.dp)
-                .fillMaxWidth()
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(
-                    text = "HR: ${vital.heartRate ?: "--"} bpm",
-                    style = MaterialTheme.typography.bodyMedium
-                )
-                Text(
-                    text = "BP: ${vital.systolicPressure ?: "--"}/${vital.diastolicPressure ?: "--"}",
-                    style = MaterialTheme.typography.bodyMedium
-                )
-            }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(
-                    text = "O2: ${vital.oxygenSaturation?.let { "%.1f".format(it) } ?: "--"}%",
-                    style = MaterialTheme.typography.bodyMedium
-                )
-                Text(
-                    text = "Temp: ${vital.temperature?.let { "%.1f".format(it) } ?: "--"}°C",
-                    style = MaterialTheme.typography.bodyMedium
-                )
-            }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(
-                    text = "Resp: ${vital.respiratoryRate ?: "--"}/min",
-                    style = MaterialTheme.typography.bodyMedium
-                )
-                Text(
-                    text = "Sugar: ${vital.bloodSugar?.let { "%.1f".format(it) } ?: "--"} mg/dL",
-                    style = MaterialTheme.typography.bodyMedium
-                )
-            }
-        }
-    }
 }
 
 @Composable
@@ -267,42 +120,185 @@ private fun VitalsSummary(
 ) {
     Column(
         modifier = modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+        verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
+        if (vitals.critical) {
+            Card(
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.errorContainer
+                )
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp)
+                ) {
+                    Text(
+                        text = "Critical Values Detected",
+                        style = MaterialTheme.typography.titleSmall,
+                        color = MaterialTheme.colorScheme.onErrorContainer
+                    )
+                    if (!vitals.criticalNotes.isNullOrBlank()) {
+                        Text(
+                            text = vitals.criticalNotes,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onErrorContainer
+                        )
+                    }
+                }
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+        }
+
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             VitalItem(
                 label = "Heart Rate",
-                value = "${vitals.heartRate ?: "--"} bpm"
+                value = "${vitals.heartRate ?: "--"} bpm",
+                isCritical = vitals.critical && vitals.heartRate != null,
+                modifier = Modifier.weight(1f)
             )
             VitalItem(
                 label = "Blood Pressure",
-                value = "${vitals.systolicPressure ?: "--"}/${vitals.diastolicPressure ?: "--"}"
+                value = "${vitals.systolicPressure ?: "--"}/${vitals.diastolicPressure ?: "--"}",
+                isCritical = vitals.critical && (vitals.systolicPressure != null || vitals.diastolicPressure != null),
+                modifier = Modifier.weight(1f)
             )
             VitalItem(
-                label = "O2 Sat",
-                value = "${vitals.oxygenSaturation?.let { "%.1f".format(it) } ?: "--"}%"
+                label = "Temperature",
+                value = "${vitals.temperature?.let { "%.1f".format(it) } ?: "--"}°C",
+                isCritical = vitals.critical && vitals.temperature != null,
+                modifier = Modifier.weight(1f)
             )
         }
 
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             VitalItem(
-                label = "Temperature",
-                value = "${vitals.temperature?.let { "%.1f".format(it) } ?: "--"}°C"
+                label = "SpO2",
+                value = "${vitals.oxygenSaturation?.let { "%.1f".format(it) } ?: "--"}%",
+                isCritical = vitals.critical && vitals.oxygenSaturation != null,
+                modifier = Modifier.weight(1f)
             )
             VitalItem(
-                label = "Resp Rate",
-                value = "${vitals.respiratoryRate ?: "--"}/min"
+                label = "Respiratory Rate",
+                value = "${vitals.respiratoryRate ?: "--"}/min",
+                isCritical = vitals.critical && vitals.respiratoryRate != null,
+                modifier = Modifier.weight(1f)
             )
             VitalItem(
                 label = "Blood Sugar",
-                value = "${vitals.bloodSugar?.let { "%.1f".format(it) } ?: "--"}"
+                value = "${vitals.bloodSugar?.let { "%.1f".format(it) } ?: "--"}",
+                isCritical = vitals.critical && vitals.bloodSugar != null,
+                modifier = Modifier.weight(1f)
             )
+        }
+
+        Text(
+            text = "Recorded at: ${vitals.recordedAt}",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+
+        if (vitals.alertSent) {
+            Text(
+                text = "Alert sent to medical staff",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.error
+            )
+        }
+    }
+}
+
+@Composable
+private fun VitalsHistoryItem(
+    vitals: VitalsResponse,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = if (vitals.critical)
+                MaterialTheme.colorScheme.errorContainer
+            else
+                MaterialTheme.colorScheme.surfaceVariant
+        )
+    ) {
+        Column(
+            modifier = Modifier
+                .padding(12.dp)
+                .fillMaxWidth()
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = vitals.recordedAt,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = if (vitals.critical)
+                        MaterialTheme.colorScheme.onErrorContainer
+                    else
+                        MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                if (vitals.critical) {
+                    Text(
+                        text = "Critical",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.error
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(4.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Column {
+                    Text(
+                        text = "HR: ${vitals.heartRate ?: "--"} bpm",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                    Text(
+                        text = "BP: ${vitals.systolicPressure ?: "--"}/${vitals.diastolicPressure ?: "--"}",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                    Text(
+                        text = "SpO2: ${vitals.oxygenSaturation?.let { "%.1f".format(it) } ?: "--"}%",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
+                Column {
+                    Text(
+                        text = "Temp: ${vitals.temperature?.let { "%.1f".format(it) } ?: "--"}°C",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                    Text(
+                        text = "Resp: ${vitals.respiratoryRate ?: "--"}/min",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                    Text(
+                        text = "Sugar: ${vitals.bloodSugar?.let { "%.1f".format(it) } ?: "--"}",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
+            }
+
+            if (vitals.criticalNotes != null) {
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = vitals.criticalNotes,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.error
+                )
+            }
         }
     }
 }
@@ -311,6 +307,7 @@ private fun VitalsSummary(
 private fun VitalItem(
     label: String,
     value: String,
+    isCritical: Boolean,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -319,11 +316,13 @@ private fun VitalItem(
     ) {
         Text(
             text = label,
-            style = MaterialTheme.typography.bodySmall
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
         )
         Text(
             text = value,
-            style = MaterialTheme.typography.titleMedium
+            style = MaterialTheme.typography.titleMedium,
+            color = if (isCritical) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface
         )
     }
 }

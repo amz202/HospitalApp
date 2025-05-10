@@ -3,9 +3,6 @@ package com.example.hospitalapp.ui.patient
 import androidx.compose.foundation.lazy.LazyColumn
 import com.example.hospitalapp.network.model.PatientResponse
 import kotlinx.coroutines.launch
-
-package com.example.hospitalapp.ui.screens.patient
-
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.*
@@ -17,6 +14,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import com.example.hospitalapp.ui.navigation.HealthReportNav
 import com.example.hospitalapp.ui.viewModels.*
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -176,9 +174,7 @@ fun PatientDashboard(
                     VitalsSection(
                         patientId = patientId,
                         vitalsViewModel = vitalsViewModel,
-                        onNavigateToVitalsDetail = {
-                            navController.navigate("vitals_detail/$patientId")
-                        }
+                        navController
                     )
                 }
 
@@ -186,9 +182,7 @@ fun PatientDashboard(
                     MedicationsSection(
                         patientId = patientId,
                         medicationViewModel = medicationViewModel,
-                        onNavigateToMedicationDetail = {
-                            navController.navigate("medication_detail/$patientId")
-                        }
+                        navController
                     )
                 }
 
@@ -196,20 +190,28 @@ fun PatientDashboard(
                     AppointmentsSection(
                         patientId = patientId,
                         appointmentViewModel = appointmentViewModel,
-                        onNavigateToAppointmentDetail = {
-                            navController.navigate("appointment_detail/$patientId")
-                        }
+                        navController
                     )
                 }
 
                 item {
                     Button(
                         onClick = {
-                            navController.navigate("health_report/$patientId")
+                            navController.navigate(HealthReportNav(patientId = patientId))
                         },
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 8.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                            contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                        )
                     ) {
-                        Text("View Health Report")
+                        Text(
+                            text = "View Health Report",
+                            style = MaterialTheme.typography.titleMedium,
+                            modifier = Modifier.padding(vertical = 8.dp)
+                        )
                     }
                 }
             }
