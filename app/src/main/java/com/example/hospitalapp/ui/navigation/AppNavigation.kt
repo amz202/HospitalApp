@@ -136,7 +136,6 @@ fun AppNavigation(
                 patientId = args.patientId,
                 appointmentViewModel = appointmentViewModel,
                 navController = navController,
-                isDoctor = true // Add this flag to customize the booking screen for doctors
             )
         }
     }
