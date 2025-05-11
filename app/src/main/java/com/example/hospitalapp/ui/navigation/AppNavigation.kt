@@ -43,6 +43,7 @@ fun AppNavigation(
 ) {
     val navController = rememberNavController()
     var userInfo by remember { mutableStateOf<UserPreferences.UserInfo?>(null) }
+    val currentUser by userViewModel.currentUser.collectAsState()
 
     LaunchedEffect(Unit) {
         userInfo = userPreferences.getUser()
@@ -78,8 +79,9 @@ fun AppNavigation(
 
         // Patient Dashboard
         composable<PatientDashboardNav> {
+            val userId = currentUser?.id ?: return@composable
             PatientDashboardStateScreen(
-                patientId = 1L,
+                patientId = userId,
                 navController = navController,
                 vitalsViewModel = vitalsViewModel,
                 medicationViewModel = medicationViewModel,
@@ -137,8 +139,9 @@ fun AppNavigation(
         }
         // Doctor Dashboard and its routes
         composable<DoctorDashboardNav> {
+            val userId = currentUser?.id ?: return@composable
             DoctorDashboardStateScreen(
-                doctorId = 1L,
+                doctorId = userId,
                 navController = navController,
                 doctorViewModel = doctorViewModel,
                 appointmentViewModel = appointmentViewModel

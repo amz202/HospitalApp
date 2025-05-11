@@ -28,13 +28,16 @@ fun LoginScreen(
         when (loginState) {
             is BaseUiState.Success -> {
                 if (loginState.data != null) {
+                    showError = false
                     onLoginSuccess()
                 }
             }
             is BaseUiState.Error -> {
                 showError = true
             }
-            else -> {}
+            else -> {
+                showError = false
+            }
         }
     }
 
@@ -69,6 +72,7 @@ fun LoginScreen(
             label = { Text("Username") },
             singleLine = true,
             isError = showError,
+            enabled = loginState !is BaseUiState.Loading,
             modifier = Modifier.fillMaxWidth()
         )
 
@@ -84,6 +88,7 @@ fun LoginScreen(
             visualTransformation = PasswordVisualTransformation(),
             singleLine = true,
             isError = showError,
+            enabled = loginState !is BaseUiState.Loading,
             modifier = Modifier.fillMaxWidth()
         )
 
@@ -117,7 +122,8 @@ fun LoginScreen(
         Spacer(modifier = Modifier.height(16.dp))
 
         TextButton(
-            onClick = onSignUpClick
+            onClick = onSignUpClick,
+            enabled = loginState !is BaseUiState.Loading
         ) {
             Text("Don't have an account? Sign up")
         }

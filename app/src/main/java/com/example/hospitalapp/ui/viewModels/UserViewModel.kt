@@ -30,7 +30,7 @@ class UserViewModel(
     var createUserUiState: BaseUiState<UserResponse?> by mutableStateOf(BaseUiState.Success(null))
         private set
 
-    private var _loginState = mutableStateOf<BaseUiState<Long?>>(BaseUiState.Loading)
+    private var _loginState = mutableStateOf<BaseUiState<Long?>>(BaseUiState.Success(null))
     val loginState: State<BaseUiState<Long?>> = _loginState
 
     private val _currentUser = MutableStateFlow<UserResponse?>(null)
@@ -63,15 +63,15 @@ class UserViewModel(
 
     fun login(username: String, password: String) {
         viewModelScope.launch {
-            _loginState.value = BaseUiState.Loading
             try {
+                _loginState.value = BaseUiState.Loading
                 val response = userRepository.login(username, password)
                 userPreferences.saveUserId(response.userId)
-                _loginState.value = BaseUiState.Success(response.userId)
-                // After successful login, get user details
                 getUserById(response.userId)
+                _loginState.value = BaseUiState.Success(response.userId)
             } catch (e: Exception) {
                 _loginState.value = BaseUiState.Error
+                e.printStackTrace() // Add this for debugging
             }
         }
     }
