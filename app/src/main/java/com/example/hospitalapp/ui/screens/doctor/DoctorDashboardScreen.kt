@@ -17,6 +17,8 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.example.hospitalapp.ui.viewModels.*
 import com.example.hospitalapp.network.model.*
+import com.example.hospitalapp.ui.navigation.DoctorAppointmentDetailNav
+import com.example.hospitalapp.ui.navigation.DoctorPatientDetailNav
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
@@ -142,13 +144,18 @@ fun DoctorDashboard(
                 0 -> PatientsTab(
                     patientsState = patientsState,
                     onPatientClick = { patientId ->
-                        navController.navigate("patient_detail/$patientId")
+                        navController.navigate(DoctorPatientDetailNav(patientId = patientId))
                     }
                 )
                 1 -> AppointmentsTab(
                     appointmentsState = appointmentsState,
                     onAppointmentClick = { appointmentId ->
-                        navController.navigate("appointment_detail/$appointmentId")
+                        navController.navigate(
+                            DoctorAppointmentDetailNav(
+                                appointmentId = appointmentId,
+                                doctorId = doctor.id
+                            )
+                        )
                     }
                 )
                 2 -> OverviewTab(
