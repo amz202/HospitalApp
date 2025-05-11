@@ -1,7 +1,9 @@
 package com.example.hospitalapp.data.repositories
 
 import com.example.hospitalapp.network.ApiService
-import com.example.hospitalapp.network.model.UserRequest
+import com.example.hospitalapp.network.model.CreateUserRequest
+import com.example.hospitalapp.network.model.LoginRequest
+import com.example.hospitalapp.network.model.LoginResponse
 import com.example.hospitalapp.network.model.UserResponse
 import okhttp3.ResponseBody
 
@@ -9,6 +11,10 @@ interface UserRepository {
     suspend fun getAllUsers(): List<UserResponse>
     suspend fun getUserById(id: Long): UserResponse
     suspend fun deleteUser(id: Long)
+    suspend fun createUser(request: CreateUserRequest): UserResponse
+    suspend fun login(username: String, password: String): LoginResponse
+    suspend fun getUserByEmail(email: String): UserResponse
+    suspend fun getUserByUsername(username: String): UserResponse
 }
 
 class UserRepositoryImpl(private val apiService: ApiService) : UserRepository {
@@ -20,4 +26,15 @@ class UserRepositoryImpl(private val apiService: ApiService) : UserRepository {
 
     override suspend fun deleteUser(id: Long) =
         apiService.deleteUser(id)
+    override suspend fun createUser(request: CreateUserRequest): UserResponse =
+        apiService.createUser(request)
+
+    override suspend fun login(username: String, password: String): LoginResponse =
+        apiService.login(LoginRequest(username, password))
+
+    override suspend fun getUserByEmail(email: String): UserResponse =
+        apiService.getUserByEmail(email)
+
+    override suspend fun getUserByUsername(username: String): UserResponse =
+        apiService.getUserByUsername(username)
 }

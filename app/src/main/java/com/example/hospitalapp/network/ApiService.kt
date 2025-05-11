@@ -26,11 +26,23 @@ interface ApiService {
     @GET("api/admins/users")
     suspend fun getAllUsers(): List<UserResponse>
 
-    @GET("api/admins/users/{id}")
-    suspend fun getUserById(@Path("id") id: Long): UserResponse
-
     @DELETE("api/admins/users/{id}")
     suspend fun deleteUser(@Path("id") id: Long)
+
+    @POST("api/users")
+    suspend fun createUser(@Body request: CreateUserRequest): UserResponse
+
+    @POST("api/users/login")
+    suspend fun login(@Body request: LoginRequest): LoginResponse
+
+    @GET("api/users/{id}")
+    suspend fun getUserById(@Path("id") id: Long): UserResponse
+
+    @GET("api/users/by-email/{email}")
+    suspend fun getUserByEmail(@Path("email") email: String): UserResponse
+
+    @GET("api/users/by-username/{username}")
+    suspend fun getUserByUsername(@Path("username") username: String): UserResponse
 
     // Patient Management
     @GET("api/patients")
@@ -211,4 +223,6 @@ interface ApiService {
         @Path("id") id: Long,
         @Query("status") status: AppointmentStatus
     ): AppointmentResponse
+
+
 }

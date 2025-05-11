@@ -101,7 +101,7 @@ fun AppNavigation(
         // Doctor Dashboard and its routes
         composable<DoctorDashboardNav> {
             DoctorDashboardStateScreen(
-                doctorId = 1L, // Replace with actual doctor ID or pass through nav args
+                doctorId = 1L,
                 navController = navController,
                 doctorViewModel = doctorViewModel,
                 appointmentViewModel = appointmentViewModel
