@@ -8,6 +8,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
+import com.example.hospitalapp.ui.patient.AppointmentBookingScreen
 import com.example.hospitalapp.ui.patient.PatientDashboardStateScreen
 import com.example.hospitalapp.ui.patient.detail.AppointmentDetailScreen
 import com.example.hospitalapp.ui.patient.detail.HealthReportScreen
@@ -68,6 +69,15 @@ fun AppNavigation(
         composable<AppointmentDetailNav> {
             val args = it.toRoute<AppointmentDetailNav>()
             AppointmentDetailScreen(
+                patientId = args.patientId,
+                appointmentViewModel = appointmentViewModel,
+                navController = navController
+            )
+        }
+
+        composable<AppointmentBookingScreenNav> { backStackEntry ->
+            val args = backStackEntry.toRoute<AppointmentBookingScreenNav>()
+            AppointmentBookingScreen(
                 patientId = args.patientId,
                 appointmentViewModel = appointmentViewModel,
                 navController = navController

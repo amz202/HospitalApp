@@ -22,6 +22,7 @@ import com.example.hospitalapp.ui.viewModels.BaseUiState
 import com.example.hospitalapp.network.model.AppointmentResponse
 import com.example.hospitalapp.network.model.AppointmentStatus
 import com.example.hospitalapp.network.model.AppointmentType
+import com.example.hospitalapp.ui.navigation.AppointmentBookingScreenNav
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
@@ -62,11 +63,15 @@ fun AppointmentDetailScreen(
             )
         },
         floatingActionButton = {
-            ExtendedFloatingActionButton(
-                onClick = { /* Navigate to appointment booking screen */ },
-                icon = { Icon(Icons.Default.Add, "Book Appointment") },
-                text = { Text("Book Appointment") }
-            )
+            FloatingActionButton(
+                onClick = {
+                    navController.navigate(
+                        AppointmentBookingScreenNav(patientId = patientId)
+                    )
+                }
+            ) {
+                Icon(Icons.Default.Add, contentDescription = "Book Appointment")
+            }
         }
     ) { padding ->
         Box(

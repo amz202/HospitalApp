@@ -15,6 +15,7 @@ import com.example.hospitalapp.ui.viewModels.BaseUiState
 import com.example.hospitalapp.network.model.AppointmentResponse
 import com.example.hospitalapp.network.model.AppointmentStatus
 import com.example.hospitalapp.network.model.AppointmentType
+import com.example.hospitalapp.ui.navigation.AppointmentBookingScreenNav
 import com.example.hospitalapp.ui.navigation.AppointmentDetailNav
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -62,6 +63,15 @@ fun AppointmentsSection(
                     }
                 ) {
                     Text("View All")
+                }
+                TextButton(
+                    onClick = {
+                        navController.navigate(
+                            AppointmentBookingScreenNav(patientId = patientId)
+                        )
+                    }
+                ) {
+                    Text("Book New")
                 }
             }
 
