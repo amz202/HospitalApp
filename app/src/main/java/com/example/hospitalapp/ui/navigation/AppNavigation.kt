@@ -7,6 +7,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
+import com.example.hospitalapp.data.datastore.UserPreferences
 import com.example.hospitalapp.ui.screens.doctor.DoctorDashboardStateScreen
 import com.example.hospitalapp.ui.screens.doctor.detail.DoctorAppointmentDetailScreen
 import com.example.hospitalapp.ui.screens.doctor.detail.PatientDetailScreen
@@ -16,10 +17,13 @@ import com.example.hospitalapp.ui.screens.patient.detail.AppointmentDetailScreen
 import com.example.hospitalapp.ui.screens.patient.detail.HealthReportScreen
 import com.example.hospitalapp.ui.screens.patient.detail.MedicationDetailScreen
 import com.example.hospitalapp.ui.screens.patient.detail.VitalsDetailScreen
+import com.example.hospitalapp.ui.signin.LoginScreen
+import com.example.hospitalapp.ui.signin.SignupScreen
 import com.example.hospitalapp.ui.viewModels.AppointmentViewModel
 import com.example.hospitalapp.ui.viewModels.DoctorViewModel
 import com.example.hospitalapp.ui.viewModels.MedicationViewModel
 import com.example.hospitalapp.ui.viewModels.PatientViewModel
+import com.example.hospitalapp.ui.viewModels.UserViewModel
 import com.example.hospitalapp.ui.viewModels.VitalsViewModel
 
 
@@ -31,13 +35,44 @@ fun AppNavigation(
     appointmentViewModel: AppointmentViewModel,
     patientViewModel: PatientViewModel,
     doctorViewModel: DoctorViewModel,
+    userViewModel: UserViewModel,
+    userPreferences: UserPreferences
+
 ) {
     val navController = rememberNavController()
+    var userInfo by remember { mutableStateOf<UserPreferences.UserInfo?>(null) }
 
+    LaunchedEffect(Unit) {
+        userInfo = userPreferences.getUser()
+    }
     NavHost(
         navController = navController,
-        startDestination = PatientDashboardNav
+        startDestination = if (userInfo != null) PatientDashboardNav else LoginScreenNav
     ) {
+        // Auth screens
+        composable<LoginScreenNav> {
+            LoginScreen(
+                userViewModel = userViewModel,
+                onSignUpClick = { navController.navigate(SignupScreenNav) },
+                onLoginSuccess = {
+                    navController.navigate(PatientDashboardNav) {
+                        popUpTo(LoginScreenNav) { inclusive = true }
+                    }
+                }
+            )
+        }
+
+        composable<SignupScreenNav> {
+            SignupScreen(
+                userViewModel = userViewModel,
+                onBackClick = { navController.navigateUp() },
+                onSignUpSuccess = {
+                    navController.navigate(PatientDashboardNav) {
+                        popUpTo(LoginScreenNav) { inclusive = true }
+                    }
+                }
+            )
+        }
 
         // Patient Dashboard
         composable<PatientDashboardNav> {
