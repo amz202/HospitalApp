@@ -23,7 +23,8 @@ data class CreateUserRequest(
     val phoneNumber: String?,
     val gender: Gender,
     val dateOfBirth: String,
-    val address: String
+    val address: String,
+    val role: String
 )
 
 data class LoginRequest(

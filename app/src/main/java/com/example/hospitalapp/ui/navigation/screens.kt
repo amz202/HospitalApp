@@ -52,3 +52,9 @@ data class DoctorAppointmentBookingNav(
     val patientId: Long,
     val doctorId: Long
 )
+
+@Serializable
+object LoginScreenNav
+
+@Serializable
+object SignupScreenNav
