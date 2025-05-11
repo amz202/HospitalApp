@@ -2,6 +2,7 @@ package com.example.hospitalapp.ui.navigation
 
 import android.os.Build
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.*
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -36,7 +37,8 @@ fun AppNavigation(
     patientViewModel: PatientViewModel,
     doctorViewModel: DoctorViewModel,
     userViewModel: UserViewModel,
-    userPreferences: UserPreferences
+    userPreferences: UserPreferences,
+    paddingValues: PaddingValues
 
 ) {
     val navController = rememberNavController()
