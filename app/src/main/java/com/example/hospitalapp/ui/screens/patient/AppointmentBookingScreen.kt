@@ -1,4 +1,4 @@
-package com.example.hospitalapp.ui.patient
+package com.example.hospitalapp.ui.screens.patient
 
 import com.example.hospitalapp.ui.viewModels.AppointmentViewModel
 import android.os.Build
@@ -10,13 +10,13 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.hospitalapp.network.model.AppointmentRequest
 import com.example.hospitalapp.network.model.AppointmentType
 import java.time.LocalDateTime
+import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -35,12 +35,7 @@ fun AppointmentBookingScreen(
     var showDatePicker by remember { mutableStateOf(false) }
     var showTimePicker by remember { mutableStateOf(false) }
 
-    val currentDateTime = remember {
-        LocalDateTime.parse(
-            "2025-05-11 05:28:34",
-            DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
-        )
-    }
+    val currentDateTime = LocalDateTime.now()
 
     Scaffold(
         topBar = {
@@ -187,10 +182,10 @@ fun AppointmentBookingScreen(
             ) {
                 DatePicker(
                     state = rememberDatePickerState(
-                        initialSelectedDateMillis = selectedDate.toEpochSecond(java.time.ZoneOffset.UTC) * 1000,
+                        initialSelectedDateMillis = selectedDate.toEpochSecond(ZoneOffset.UTC) * 1000,
                         selectableDates = object : SelectableDates {
                             override fun isSelectableDate(utcTimeMillis: Long): Boolean {
-                                return utcTimeMillis >= currentDateTime.toEpochSecond(java.time.ZoneOffset.UTC) * 1000
+                                return utcTimeMillis >= currentDateTime.toEpochSecond(ZoneOffset.UTC) * 1000
                             }
                         }
                     )

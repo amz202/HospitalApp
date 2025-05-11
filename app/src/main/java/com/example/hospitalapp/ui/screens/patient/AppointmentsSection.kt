@@ -1,4 +1,4 @@
-package com.example.hospitalapp.ui.patient
+package com.example.hospitalapp.ui.screens.patient
 
 import android.os.Build
 import androidx.annotation.RequiresApi
@@ -29,9 +29,7 @@ fun AppointmentsSection(
     modifier: Modifier = Modifier
 ) {
     val appointmentsState = appointmentViewModel.appointmentsUiState
-    val currentDateTime = remember {
-        LocalDateTime.parse("2025-05-10 08:19:28", DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
-    }
+    val currentDateTime = LocalDateTime.now()
 
     LaunchedEffect(patientId) {
         appointmentViewModel.getPatientAppointments(patientId)

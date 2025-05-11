@@ -1,4 +1,4 @@
-package com.example.hospitalapp.ui.patient.detail
+package com.example.hospitalapp.ui.screens.patient.detail
 
 import android.os.Build
 import androidx.annotation.RequiresApi
@@ -7,7 +7,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.*
 import androidx.compose.runtime.*

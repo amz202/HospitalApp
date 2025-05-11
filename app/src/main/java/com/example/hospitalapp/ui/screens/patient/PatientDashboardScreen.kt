@@ -1,4 +1,4 @@
-package com.example.hospitalapp.ui.patient
+package com.example.hospitalapp.ui.screens.patient
 
 import androidx.compose.foundation.lazy.LazyColumn
 import com.example.hospitalapp.network.model.PatientResponse

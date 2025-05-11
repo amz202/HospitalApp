@@ -1,4 +1,4 @@
-package com.example.hospitalapp.ui.patient
+package com.example.hospitalapp.ui.screens.patient
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
