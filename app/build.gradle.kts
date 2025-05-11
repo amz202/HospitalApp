@@ -93,5 +93,6 @@ dependencies {
 
     // Charts for Vitals
     implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
+    implementation ("androidx.compose.material:material-icons-extended:1.7.8")
 
 }
