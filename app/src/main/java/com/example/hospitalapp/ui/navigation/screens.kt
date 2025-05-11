@@ -3,17 +3,18 @@ package com.example.hospitalapp.ui.navigation
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class MedicationDetailNav(
-    val patientId: Long
-)
+object SignInScreenNav
 
 @Serializable
-data class MedicationsListNav(
-    val patientId: Long
-)
+object PatientDashboardNav
 
 @Serializable
 data class VitalsDetailNav(
+    val patientId: Long
+)
+
+@Serializable
+data class MedicationDetailNav(
     val patientId: Long
 )
 
