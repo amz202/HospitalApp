@@ -38,8 +38,6 @@ fun AppNavigation(
     doctorViewModel: DoctorViewModel,
     userViewModel: UserViewModel,
     userPreferences: UserPreferences,
-    paddingValues: PaddingValues
-
 ) {
     val navController = rememberNavController()
     var userInfo by remember { mutableStateOf<UserPreferences.UserInfo?>(null) }

@@ -24,17 +24,17 @@ class UserViewModel(
 
 ) : ViewModel(){
 
-    var userDetailsUiState: BaseUiState<UserResponse?> by mutableStateOf(BaseUiState.Success(null))
-        private set
-
-    var createUserUiState: BaseUiState<UserResponse?> by mutableStateOf(BaseUiState.Success(null))
-        private set
-
     private var _loginState = mutableStateOf<BaseUiState<Long?>>(BaseUiState.Success(null))
     val loginState: State<BaseUiState<Long?>> = _loginState
 
     private val _currentUser = MutableStateFlow<UserResponse?>(null)
     val currentUser: StateFlow<UserResponse?> = _currentUser
+
+    var userDetailsUiState: BaseUiState<UserResponse?> by mutableStateOf(BaseUiState.Success(null))
+        private set
+
+    var createUserUiState: BaseUiState<UserResponse?> by mutableStateOf(BaseUiState.Success(null))
+        private set
 
     init {
         // Check if user is already logged in

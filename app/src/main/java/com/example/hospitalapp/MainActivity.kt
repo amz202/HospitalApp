@@ -7,7 +7,10 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.paddingFrom
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.ViewModelProvider
 import com.example.hospitalapp.data.datastore.UserPreferences
@@ -60,16 +63,17 @@ class MainActivity : ComponentActivity() {
                 Scaffold(
                     modifier = Modifier.fillMaxSize()
                 ) { padding ->
-                    AppNavigation(
-                        vitalsViewModel = vitalsViewModel,
-                        medicationViewModel = medicationViewModel,
-                        appointmentViewModel = appointmentViewModel,
-                        patientViewModel = patientViewModel,
-                        doctorViewModel = doctorViewModel,
-                        userViewModel = userViewModel,
-                        userPreferences = userPreferences,
-                        padding
-                    )
+                    Surface(modifier = Modifier.padding(padding)) {
+                        AppNavigation(
+                            vitalsViewModel = vitalsViewModel,
+                            medicationViewModel = medicationViewModel,
+                            appointmentViewModel = appointmentViewModel,
+                            patientViewModel = patientViewModel,
+                            doctorViewModel = doctorViewModel,
+                            userViewModel = userViewModel,
+                            userPreferences = userPreferences,
+                        )
+                    }
                 }
             }
         }

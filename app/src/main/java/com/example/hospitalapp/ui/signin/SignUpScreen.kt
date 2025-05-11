@@ -37,16 +37,22 @@ fun SignupScreen(
     var showError by remember { mutableStateOf(false) }
 
     val createUserState = userViewModel.createUserUiState
+    val currentUser by userViewModel.currentUser.collectAsState()
+
+    LaunchedEffect(currentUser) {
+        if (currentUser != null) {
+            onSignUpSuccess()
+        }
+    }
 
     LaunchedEffect(createUserState) {
         when (createUserState) {
-            is BaseUiState.Success -> {
-                onSignUpSuccess()
-            }
             is BaseUiState.Error -> {
                 showError = true
             }
-            else -> {}
+            else -> {
+                showError = false
+            }
         }
     }
 
@@ -55,7 +61,10 @@ fun SignupScreen(
             TopAppBar(
                 title = { Text("Create Account") },
                 navigationIcon = {
-                    IconButton(onClick = onBackClick) {
+                    IconButton(
+                        onClick = onBackClick,
+                        enabled = createUserState !is BaseUiState.Loading
+                    ) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back")
                     }
                 }
@@ -85,6 +94,7 @@ fun SignupScreen(
                     FilterChip(
                         selected = selectedRole == role,
                         onClick = { selectedRole = role },
+                        enabled = createUserState !is BaseUiState.Loading,
                         label = { Text(role.capitalize()) }
                     )
                 }
@@ -99,6 +109,7 @@ fun SignupScreen(
                 label = { Text("Username") },
                 singleLine = true,
                 isError = showError,
+                enabled = createUserState !is BaseUiState.Loading,
                 modifier = Modifier.fillMaxWidth()
             )
 
@@ -112,6 +123,7 @@ fun SignupScreen(
                 visualTransformation = PasswordVisualTransformation(),
                 singleLine = true,
                 isError = showError,
+                enabled = createUserState !is BaseUiState.Loading,
                 modifier = Modifier.fillMaxWidth()
             )
 
@@ -124,6 +136,7 @@ fun SignupScreen(
                 label = { Text("Email") },
                 singleLine = true,
                 isError = showError,
+                enabled = createUserState !is BaseUiState.Loading,
                 modifier = Modifier.fillMaxWidth()
             )
 
@@ -140,6 +153,7 @@ fun SignupScreen(
                     label = { Text("First Name") },
                     singleLine = true,
                     isError = showError,
+                    enabled = createUserState !is BaseUiState.Loading,
                     modifier = Modifier.weight(1f)
                 )
 
@@ -152,6 +166,7 @@ fun SignupScreen(
                     label = { Text("Last Name") },
                     singleLine = true,
                     isError = showError,
+                    enabled = createUserState !is BaseUiState.Loading,
                     modifier = Modifier.weight(1f)
                 )
             }
@@ -165,6 +180,7 @@ fun SignupScreen(
                 label = { Text("Phone Number") },
                 singleLine = true,
                 isError = showError,
+                enabled = createUserState !is BaseUiState.Loading,
                 modifier = Modifier.fillMaxWidth()
             )
 
@@ -206,7 +222,13 @@ fun SignupScreen(
                     Text("Create Account")
                 }
             }
-
+            if (createUserState is BaseUiState.Error) {
+                Text(
+                    text = "Error: ${createUserState}",
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
             Spacer(modifier = Modifier.height(32.dp))
         }
     }
