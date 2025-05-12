@@ -38,7 +38,8 @@ data class LoginRequest(
 )
 @Serializable
 data class LoginResponse(
-    val userId: Long
+    val userId: Long,
+    val role: String  // Single role as String, not Set<String>
 )
 
 enum class Gender {

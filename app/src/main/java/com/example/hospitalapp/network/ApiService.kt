@@ -34,7 +34,7 @@ interface ApiService {
     suspend fun createUser(@Body request: CreateUserRequest): UserResponse
 
     @POST("api/users/login")
-    suspend fun login(@Body request: LoginRequest): Long
+    suspend fun login(@Body request: LoginRequest): LoginResponse
 
     @GET("api/users/{id}")
     suspend fun getUserById(@Path("id") id: Long): UserResponse

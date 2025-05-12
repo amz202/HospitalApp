@@ -100,12 +100,20 @@ class UserViewModel(
         viewModelScope.launch {
             try {
                 _loginState.value = BaseUiState.Loading
-                val userId = userRepository.login(username, password)  // Now directly returns userId
-                userPreferences.saveUserId(userId)
-                getUserById(userId)
-                _loginState.value = BaseUiState.Success(userId)
+                val response = userRepository.login(username, password)
+                userPreferences.saveUserId(response.userId)
+
+                // After successful login, get user details
+                getUserById(response.userId)
+
+                _loginState.value = BaseUiState.Success(response)
             } catch (e: Exception) {
                 _loginState.value = BaseUiState.Error
+                errorMessage = when {
+                    e.message?.contains("401") == true -> "Invalid username or password"
+                    e is IOException -> "Network error: Please check your connection"
+                    else -> "Login failed: ${e.message}"
+                }
                 e.printStackTrace()
             }
         }
@@ -121,9 +129,11 @@ class UserViewModel(
                 userDetailsUiState = BaseUiState.Success(result)
             } catch (e: Exception) {
                 userDetailsUiState = BaseUiState.Error
+                errorMessage = "Failed to get user details: ${e.message}"
             }
         }
     }
+
 
     fun logout() {
         viewModelScope.launch {
@@ -140,6 +150,19 @@ class UserViewModel(
                     this[ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY] as HospitalApplication
                 UserViewModel(app.container.userRepository, app.userPreferences)
             }
+        }
+    }
+    fun hasRole(role: String): Boolean {
+        return _currentUser.value?.roles?.contains(role) ?: false
+    }
+
+    fun getPrimaryRole(): String? {
+        val roles = _currentUser.value?.roles
+        return when {
+            roles?.contains("PATIENT") == true -> "PATIENT"
+            roles?.contains("DOCTOR") == true -> "DOCTOR"
+            roles?.contains("ADMIN") == true -> "ADMIN"
+            else -> null
         }
     }
 }

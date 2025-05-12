@@ -14,7 +14,7 @@ interface UserRepository {
     suspend fun getUserById(id: Long): UserResponse
     suspend fun deleteUser(id: Long)
     suspend fun createUser(request: CreateUserRequest): UserResponse
-    suspend fun login(username: String, password: String): Long
+    suspend fun login(username: String, password: String): LoginResponse
     suspend fun getUserByEmail(email: String): UserResponse
     suspend fun getUserByUsername(username: String): UserResponse
 }
@@ -31,7 +31,7 @@ class UserRepositoryImpl(private val apiService: ApiService) : UserRepository {
     override suspend fun createUser(request: CreateUserRequest): UserResponse =
         apiService.createUser(request)
 
-    override suspend fun login(username: String, password: String): Long =
+    override suspend fun login(username: String, password: String): LoginResponse =
         apiService.login(LoginRequest(username, password))
 
     override suspend fun getUserByEmail(email: String): UserResponse =

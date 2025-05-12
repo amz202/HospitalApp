@@ -15,7 +15,7 @@ import com.example.hospitalapp.ui.viewModels.UserViewModel
 fun LoginScreen(
     userViewModel: UserViewModel,
     onSignUpClick: () -> Unit,
-    onLoginSuccess: () -> Unit,
+    onLoginSuccess: (roles: Set<String>) -> Unit,  // Changed to Set<String>
     modifier: Modifier = Modifier
 ) {
     var username by remember { mutableStateOf("") }
@@ -27,9 +27,10 @@ fun LoginScreen(
     LaunchedEffect(loginState) {
         when (loginState) {
             is BaseUiState.Success -> {
-                if (loginState.data != null) {
+                val user = userViewModel.currentUser.value
+                if (user != null) {
                     showError = false
-                    onLoginSuccess()
+                    onLoginSuccess(user.roles)  // Pass all roles
                 }
             }
             is BaseUiState.Error -> {

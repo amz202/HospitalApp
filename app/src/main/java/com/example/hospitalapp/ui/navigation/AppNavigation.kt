@@ -54,11 +54,15 @@ fun AppNavigation(
         composable<LoginScreenNav> {
             LoginScreen(
                 userViewModel = userViewModel,
-                onSignUpClick = { navController.navigate(SignupScreenNav) },
-                onLoginSuccess = {
-                    navController.navigate(PatientDashboardNav) {
-                        popUpTo(LoginScreenNav) { inclusive = true }
+                onLoginSuccess = { roles ->
+                    when {
+                        roles.contains("PATIENT") -> navController.navigate(PatientDashboardNav)
+                        roles.contains("DOCTOR") -> navController.navigate(DoctorDashboardNav)
+                        // Add other role checks as needed
                     }
+                },
+                onSignUpClick = {
+                    navController.navigate(SignupScreenNav)
                 }
             )
         }
