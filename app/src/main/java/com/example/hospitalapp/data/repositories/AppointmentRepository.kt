@@ -3,9 +3,12 @@ package com.example.hospitalapp.data.repositories
 import android.os.Build
 import androidx.annotation.RequiresApi
 import com.example.hospitalapp.data.local.dao.AppointmentDao
+import com.example.hospitalapp.data.local.dao.DoctorDetailDao
+import com.example.hospitalapp.data.local.dao.PatientDetailDao
 import com.example.hospitalapp.data.local.dao.UserDao
 import com.example.hospitalapp.data.local.entities.AppointmentEntity
 import com.example.hospitalapp.data.local.entities.UserEntity
+import com.example.hospitalapp.data.local.extensions.toAppointmentResponse
 import com.example.hospitalapp.network.model.*
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -15,153 +18,156 @@ interface AppointmentRepository {
     suspend fun getAppointments(): List<AppointmentResponse>
     suspend fun getAppointmentById(id: Long): AppointmentResponse
     suspend fun createAppointment(appointment: AppointmentRequest): AppointmentResponse
+    suspend fun updateAppointment(id: Long, appointment: AppointmentRequest): AppointmentResponse
     suspend fun getPatientAppointments(patientId: Long): List<AppointmentResponse>
     suspend fun getDoctorAppointments(doctorId: Long): List<AppointmentResponse>
     suspend fun getAppointmentsByStatus(status: AppointmentStatus): List<AppointmentResponse>
     suspend fun getUpcomingAppointmentsByPatient(patientId: Long): List<AppointmentResponse>
     suspend fun getUpcomingAppointmentsByDoctor(doctorId: Long): List<AppointmentResponse>
     suspend fun updateAppointmentStatus(id: Long, status: AppointmentStatus): AppointmentResponse
+    suspend fun cancelAppointment(id: Long): AppointmentResponse
 }
 
-class AppointmentRepositoryImpl (
+class AppointmentRepositoryImpl @Inject constructor(
     private val appointmentDao: AppointmentDao,
-    private val userDao: UserDao
+    private val userDao: UserDao,
+    private val patientDetailDao: PatientDetailDao,
+    private val doctorDetailDao: DoctorDetailDao
 ) : AppointmentRepository {
 
-    @RequiresApi(Build.VERSION_CODES.O)
-    private val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+    private val currentDate = "2025-05-12 20:38:34" // Current UTC time
+    private val currentUser = "amz202" // Current user's login
 
     override suspend fun getAppointments(): List<AppointmentResponse> {
-        return appointmentDao.getAllAppointments().map { it.toAppointmentResponse() }
+        return appointmentDao.getAllAppointments().map {
+            it.toAppointmentResponse(userDao, patientDetailDao, doctorDetailDao)
+        }
     }
 
     override suspend fun getAppointmentById(id: Long): AppointmentResponse {
-        return appointmentDao.getAppointmentById(id)?.toAppointmentResponse()
+        return appointmentDao.getAppointmentById(id)
+            ?.toAppointmentResponse(userDao, patientDetailDao, doctorDetailDao)
             ?: throw IllegalStateException("Appointment not found")
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
-    override suspend fun createAppointment(appointment: AppointmentRequest): AppointmentResponse {
-        val currentTime = LocalDateTime.now().format(dateFormatter)
+    override suspend fun createAppointment(request: AppointmentRequest): AppointmentResponse {
+        // Validate patient exists
+        userDao.getUserById(request.patientId)
+            ?: throw IllegalStateException("Patient not found")
+
+        // Validate doctor exists
+        userDao.getUserById(request.doctorId)
+            ?: throw IllegalStateException("Doctor not found")
+
         val appointmentEntity = AppointmentEntity(
-            patientId = appointment.patientId,
-            doctorId = appointment.doctorId,
-            scheduledTime = appointment.scheduledTime,
-            status = AppointmentStatus.PENDING.name,
-            type = appointment.type,
-            notes = appointment.notes,
-            reason = appointment.reason,
-            meetingLink = null, // Will be set when appointment is confirmed
-            createdAt = currentTime,
-            updatedAt = currentTime
+            patientId = request.patientId,
+            doctorId = request.doctorId,
+            scheduledTime = request.scheduledTime,
+            appointmentStatus = request.status.name,
+            type = request.type,
+            reason = request.reason,
+            notes = request.notes,
+            virtualMeetingUrl = request.virtualMeetingUrl,
+            createdAt = currentDate,
+            updatedAt = currentDate,
+            createdBy = currentUser,
+            updatedBy = currentUser
         )
 
         val id = appointmentDao.insertAppointment(appointmentEntity)
         return getAppointmentById(id)
     }
 
-    override suspend fun getPatientAppointments(patientId: Long): List<AppointmentResponse> {
-        return appointmentDao.getPatientAppointments(patientId).map { it.toAppointmentResponse() }
-    }
-
-    override suspend fun getDoctorAppointments(doctorId: Long): List<AppointmentResponse> {
-        return appointmentDao.getDoctorAppointments(doctorId).map { it.toAppointmentResponse() }
-    }
-
-    override suspend fun getAppointmentsByStatus(status: AppointmentStatus): List<AppointmentResponse> {
-        return appointmentDao.getAppointmentsByStatus(status.name).map { it.toAppointmentResponse() }
-    }
-
-    @RequiresApi(Build.VERSION_CODES.O)
-    override suspend fun getUpcomingAppointmentsByPatient(patientId: Long): List<AppointmentResponse> {
-        val currentTime = LocalDateTime.now()
-        return appointmentDao.getPatientAppointments(patientId)
-            .filter {
-                LocalDateTime.parse(it.scheduledTime, dateFormatter).isAfter(currentTime)
-            }
-            .map { it.toAppointmentResponse() }
-    }
-
-    @RequiresApi(Build.VERSION_CODES.O)
-    override suspend fun getUpcomingAppointmentsByDoctor(doctorId: Long): List<AppointmentResponse> {
-        val currentTime = LocalDateTime.now()
-        return appointmentDao.getDoctorAppointments(doctorId)
-            .filter {
-                LocalDateTime.parse(it.scheduledTime, dateFormatter).isAfter(currentTime)
-            }
-            .map { it.toAppointmentResponse() }
-    }
-
-    @RequiresApi(Build.VERSION_CODES.O)
-    override suspend fun updateAppointmentStatus(id: Long, status: AppointmentStatus): AppointmentResponse {
-        val appointment = appointmentDao.getAppointmentById(id)
+    override suspend fun updateAppointment(id: Long, request: AppointmentRequest): AppointmentResponse {
+        val existing = appointmentDao.getAppointmentById(id)
             ?: throw IllegalStateException("Appointment not found")
 
-        val updatedAppointment = appointment.copy(
-            status = status.name,
-            updatedAt = LocalDateTime.now().format(dateFormatter)
+        // Validate patient exists
+        userDao.getUserById(request.patientId)
+            ?: throw IllegalStateException("Patient not found")
+
+        // Validate doctor exists
+        userDao.getUserById(request.doctorId)
+            ?: throw IllegalStateException("Doctor not found")
+
+        val updated = existing.copy(
+            patientId = request.patientId,
+            doctorId = request.doctorId,
+            scheduledTime = request.scheduledTime,
+            appointmentStatus = request.status.name,
+            type = request.type,
+            reason = request.reason,
+            notes = request.notes,
+            virtualMeetingUrl = request.virtualMeetingUrl,
+            updatedAt = currentDate,
+            updatedBy = currentUser
         )
-        appointmentDao.updateAppointment(updatedAppointment)
+
+        appointmentDao.updateAppointment(updated)
         return getAppointmentById(id)
     }
 
-    private suspend fun AppointmentEntity.toAppointmentResponse(): AppointmentResponse {
-        val patient = userDao.getUserById(patientId)?.toPatientResponse()
+    override suspend fun getPatientAppointments(patientId: Long): List<AppointmentResponse> {
+        // Verify patient exists
+        userDao.getUserById(patientId)
             ?: throw IllegalStateException("Patient not found")
-        val doctor = userDao.getUserById(doctorId)?.toDoctorResponse()
+
+        return appointmentDao.getPatientAppointments(patientId).map {
+            it.toAppointmentResponse(userDao, patientDetailDao, doctorDetailDao)
+        }
+    }
+
+    override suspend fun getDoctorAppointments(doctorId: Long): List<AppointmentResponse> {
+        // Verify doctor exists
+        userDao.getUserById(doctorId)
             ?: throw IllegalStateException("Doctor not found")
 
-        return AppointmentResponse(
-            id = id,
-            patient = patient,
-            doctor = doctor,
-            scheduledTime = scheduledTime,
-            status = AppointmentStatus.fromString(status),
-            type = type,
-            notes = notes,
-            reason = reason,
-            meetingLink = meetingLink,
-            createdAt = createdAt,
-            updatedAt = updatedAt
-        )
+        return appointmentDao.getDoctorAppointments(doctorId).map {
+            it.toAppointmentResponse(userDao, patientDetailDao, doctorDetailDao)
+        }
     }
 
-    private fun UserEntity.toPatientResponse(): PatientResponse {
-        return PatientResponse(
-            id = id,
-            username = username,
-            email = email,
-            fName = fName,
-            lName = lName,
-            phoneNumber = phoneNumber,
-            gender = gender,
-            dob = dob,
-            address = address,
-            role = role,
-            accountCreationDate = accountCreationDate,
-            bloodGroup = null,
-            allergies = emptyList(),
-            medicalHistory = emptyList()
-        )
+    override suspend fun getAppointmentsByStatus(status: AppointmentStatus): List<AppointmentResponse> {
+        return appointmentDao.getAppointmentsByStatus(status.name).map {
+            it.toAppointmentResponse(userDao, patientDetailDao, doctorDetailDao)
+        }
     }
 
-    private fun UserEntity.toDoctorResponse(): DoctorResponse {
-        return DoctorResponse(
-            id = id,
-            username = username,
-            email = email,
-            fName = fName,
-            lName = lName,
-            phoneNumber = phoneNumber,
-            gender = gender,
-            dob = dob,
-            address = address,
-            role = role,
-            accountCreationDate = accountCreationDate,
-            specialization = "", // Add these fields to UserEntity if needed
-            qualification = "",
-            experience = 0,
-            availableForEmergency = false
+    override suspend fun getUpcomingAppointmentsByPatient(patientId: Long): List<AppointmentResponse> {
+        // Verify patient exists
+        userDao.getUserById(patientId)
+            ?: throw IllegalStateException("Patient not found")
+
+        return appointmentDao.getFuturePatientAppointments(patientId, currentDate).map {
+            it.toAppointmentResponse(userDao, patientDetailDao, doctorDetailDao)
+        }
+    }
+
+    override suspend fun getUpcomingAppointmentsByDoctor(doctorId: Long): List<AppointmentResponse> {
+        // Verify doctor exists
+        userDao.getUserById(doctorId)
+            ?: throw IllegalStateException("Doctor not found")
+
+        return appointmentDao.getFutureDoctorAppointments(doctorId, currentDate).map {
+            it.toAppointmentResponse(userDao, patientDetailDao, doctorDetailDao)
+        }
+    }
+
+    override suspend fun updateAppointmentStatus(id: Long, status: AppointmentStatus): AppointmentResponse {
+        val existing = appointmentDao.getAppointmentById(id)
+            ?: throw IllegalStateException("Appointment not found")
+
+        val updated = existing.copy(
+            appointmentStatus = status.name,
+            updatedAt = currentDate,
+            updatedBy = currentUser
         )
+
+        appointmentDao.updateAppointment(updated)
+        return getAppointmentById(id)
+    }
+
+    override suspend fun cancelAppointment(id: Long): AppointmentResponse {
+        return updateAppointmentStatus(id, AppointmentStatus.CANCELLED)
     }
 }
