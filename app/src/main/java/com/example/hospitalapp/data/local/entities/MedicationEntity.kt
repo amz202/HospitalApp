@@ -32,5 +32,7 @@ data class MedicationEntity(
     val startDate: String,
     val endDate: String?,
     val instructions: String?,
-    val active: Boolean = true
+    val active: Boolean = true,
+    val createdAt: String,
+    val updatedAt: String
 )

@@ -5,18 +5,18 @@ import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
 
 @Entity(
-    tableName = "feedback",
+    tableName = "feedbacks",
     foreignKeys = [
         ForeignKey(
             entity = UserEntity::class,
             parentColumns = ["id"],
-            childColumns = ["patientId"],
+            childColumns = ["doctorId"],
             onDelete = ForeignKey.CASCADE
         ),
         ForeignKey(
             entity = UserEntity::class,
             parentColumns = ["id"],
-            childColumns = ["doctorId"],
+            childColumns = ["patientId"],
             onDelete = ForeignKey.CASCADE
         ),
         ForeignKey(
@@ -30,10 +30,13 @@ import androidx.room.PrimaryKey
 data class FeedbackEntity(
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,
-    val patientId: Long,
+    val comments: String,
+    val diagnosis: String?,
+    val recommendations: String?,
+    val nextSteps: String?,
     val doctorId: Long,
+    val patientId: Long,
     val appointmentId: Long,
-    val rating: Int,
-    val comment: String?,
-    val createdAt: String = System.currentTimeMillis().toString()
+    val createdAt: String,
+    val updatedAt: String
 )

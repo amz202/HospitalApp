@@ -23,7 +23,7 @@ interface AppointmentRepository {
     suspend fun updateAppointmentStatus(id: Long, status: AppointmentStatus): AppointmentResponse
 }
 
-class AppointmentRepositoryImpl @Inject constructor(
+class AppointmentRepositoryImpl (
     private val appointmentDao: AppointmentDao,
     private val userDao: UserDao
 ) : AppointmentRepository {

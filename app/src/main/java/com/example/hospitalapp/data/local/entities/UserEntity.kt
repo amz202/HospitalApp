@@ -8,7 +8,7 @@ data class UserEntity(
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,
     val username: String,
-    val password: String, // In production, use proper password hashing
+    val password: String,
     val email: String,
     val fName: String,
     val lName: String,
@@ -16,6 +16,6 @@ data class UserEntity(
     val gender: String,
     val dob: String,
     val address: String,
-    val role: String, // Single role instead of Set<String>
-    val accountCreationDate: String = System.currentTimeMillis().toString()
+    val role: String,
+    val accountCreationDate: String
 )

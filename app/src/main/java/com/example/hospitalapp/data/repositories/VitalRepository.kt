@@ -1,5 +1,7 @@
 package com.example.hospitalapp.data.repositories
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import com.example.hospitalapp.data.local.dao.VitalsDao
 import com.example.hospitalapp.data.local.dao.UserDao
 import com.example.hospitalapp.data.local.entities.UserEntity
@@ -16,11 +18,12 @@ interface VitalsRepository {
     suspend fun createVitals(vitals: VitalsRequest): VitalsResponse
 }
 
-class VitalsRepositoryImpl @Inject constructor(
+class VitalsRepositoryImpl (
     private val vitalsDao: VitalsDao,
     private val userDao: UserDao
 ) : VitalsRepository {
 
+    @RequiresApi(Build.VERSION_CODES.O)
     private val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
 
     override suspend fun getVitalsById(id: Long): VitalsResponse {

@@ -23,4 +23,5 @@ interface VitalsDao {
 
     @Delete
     suspend fun deleteVitals(vitals: VitalsEntity)
+
 }

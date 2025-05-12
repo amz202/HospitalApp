@@ -34,7 +34,7 @@ interface UserRepository {
     suspend fun logout()
 }
 
-class UserRepositoryImpl @Inject constructor(
+class UserRepositoryImpl (
     private val userDao: UserDao,
     private val context: Context
 ) : UserRepository {

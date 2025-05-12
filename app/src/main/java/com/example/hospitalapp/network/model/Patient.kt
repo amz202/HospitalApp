@@ -5,19 +5,21 @@ import java.time.LocalDate
 
 @Serializable
 data class PatientRequest(
+    val id: Long? = null,
+    val username: String,
+    val email: String,
+    val password: String,
     val fName: String,
     val lName: String,
-    val email: String,
     val phoneNumber: String?,
-    val password: String,
-    val bloodGroup: String?,
-    val emergencyContact: String?,
-    val allergies: String?,
-    val primaryDoctorId: Long?,
-    val gender: Gender,
+    val gender: String,
     val dob: String,
-    val address: String
+    val address: String,
+    val bloodGroup: String?,
+    val allergies: List<String>,
+    val medicalHistory: List<String>
 )
+
 @Serializable
 data class PatientResponse(
     val id: Long,
