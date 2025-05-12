@@ -345,7 +345,7 @@ private fun AppointmentsReportCard(appointments: List<AppointmentResponse>) {
                         style = MaterialTheme.typography.bodyLarge
                     )
                     Text(
-                        text = "Dr. ${appointment.doctor.firstName} ${appointment.doctor.lastName}",
+                        text = "Dr. ${appointment.doctor.fName} ${appointment.doctor.lName}",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )

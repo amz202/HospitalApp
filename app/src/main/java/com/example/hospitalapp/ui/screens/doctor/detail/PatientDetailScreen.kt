@@ -100,11 +100,11 @@ fun PatientDetailScreen(
                                     .fillMaxWidth()
                             ) {
                                 Text(
-                                    text = "${patient.firstName} ${patient.lastName}",
+                                    text = "${patient.fName} ${patient.lName}",
                                     style = MaterialTheme.typography.titleLarge
                                 )
                                 Spacer(modifier = Modifier.height(8.dp))
-                                Text("DOB: ${patient.dateOfBirth}")
+                                Text("DOB: ${patient.dob}")
                                 Text("Blood Group: ${patient.bloodGroup}")
                                 Text("Phone: ${patient.phoneNumber}")
                                 if (patient.allergies.isNotBlank()) {

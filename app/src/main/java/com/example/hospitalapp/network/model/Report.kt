@@ -1,5 +1,8 @@
 package com.example.hospitalapp.network.model
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class ReportResponse(
     val id: Long,
     val title: String,
@@ -16,7 +19,7 @@ data class ReportResponse(
     val timePeriodStart: String?,
     val timePeriodEnd: String?
 )
-
+@Serializable
 data class ReportRequest(
     val title: String,
     val patientId: Long,

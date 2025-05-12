@@ -1,9 +1,12 @@
 package com.example.hospitalapp.network.model
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class DoctorResponse(
     val id: Long,
-    val firstName: String,
-    val lastName: String,
+    val fName: String, // Changed from firstName
+    val lName: String, // Changed from lastName
     val email: String,
     val phoneNumber: String,
     val specialization: String,
@@ -19,9 +22,10 @@ data class DoctorResponse(
     val prescribedMedications: List<MedicationResponse> = emptyList()
 )
 
+@Serializable
 data class DoctorRequest(
-    val firstName: String,
-    val lastName: String,
+    val fName: String, // Changed from firstName
+    val lName: String, // Changed from lastName
     val email: String,
     val phoneNumber: String,
     val password: String,

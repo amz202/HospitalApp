@@ -255,7 +255,7 @@ private fun MedicationDetailCard(
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
-                text = "Dr. ${medication.doctor.firstName} ${medication.doctor.lastName}",
+                text = "Dr. ${medication.doctor.fName} ${medication.doctor.lName}",
                 style = MaterialTheme.typography.bodySmall
             )
 

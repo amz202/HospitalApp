@@ -2,6 +2,7 @@ package com.example.hospitalapp.network
 
 import com.example.hospitalapp.network.model.*
 import okhttp3.MultipartBody
+import okhttp3.RequestBody
 import okhttp3.ResponseBody
 import retrofit2.http.*
 
@@ -33,7 +34,7 @@ interface ApiService {
     suspend fun createUser(@Body request: CreateUserRequest): UserResponse
 
     @POST("api/users/login")
-    suspend fun login(@Body request: LoginRequest): LoginResponse
+    suspend fun login(@Body request: LoginRequest): Long
 
     @GET("api/users/{id}")
     suspend fun getUserById(@Path("id") id: Long): UserResponse

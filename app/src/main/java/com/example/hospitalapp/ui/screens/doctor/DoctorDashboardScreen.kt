@@ -108,7 +108,7 @@ fun DoctorDashboard(
                 title = {
                     Column {
                         Text(
-                            text = "Dr. ${doctor.firstName} ${doctor.lastName}",
+                            text = "Dr. ${doctor.fName} ${doctor.lName}",
                             style = MaterialTheme.typography.titleLarge
                         )
                         Text(
@@ -231,11 +231,11 @@ private fun PatientCard(
             ) {
                 Column {
                     Text(
-                        text = "${patient.firstName} ${patient.lastName}",
+                        text = "${patient.fName} ${patient.lName}",
                         style = MaterialTheme.typography.titleMedium
                     )
                     Text(
-                        text = "DOB: ${patient.dateOfBirth}",
+                        text = "DOB: ${patient.dob}",
                         style = MaterialTheme.typography.bodyMedium
                     )
                 }
@@ -386,7 +386,7 @@ private fun AppointmentCard(
             ) {
                 Column {
                     Text(
-                        text = "${appointment.patient.firstName} ${appointment.patient.lastName}",
+                        text = "${appointment.patient.fName} ${appointment.patient.lName}",
                         style = MaterialTheme.typography.titleMedium
                     )
                     Text(
@@ -595,7 +595,7 @@ private fun RecentActivityItem(
         ) {
             Column {
                 Text(
-                    text = "${appointment.patient.firstName} ${appointment.patient.lastName}",
+                    text = "${appointment.patient.fName} ${appointment.patient.lName}",
                     style = MaterialTheme.typography.bodyMedium
                 )
                 Text(

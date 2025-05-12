@@ -1,5 +1,7 @@
 package com.example.hospitalapp.network.model
 
+import kotlinx.serialization.Serializable
+@Serializable
 data class AppointmentResponse(
     val id: Long,
     val patient: PatientResponse,
@@ -13,7 +15,7 @@ data class AppointmentResponse(
     val createdAt: String,
     val updatedAt: String
 )
-
+@Serializable
 data class AppointmentRequest(
     val patientId: Long,
     val doctorId: Long,

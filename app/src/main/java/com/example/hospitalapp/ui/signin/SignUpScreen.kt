@@ -1,5 +1,7 @@
 package com.example.hospitalapp.ui.signin
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -18,7 +20,9 @@ import com.example.hospitalapp.ui.viewModels.UserViewModel
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
+import kotlin.text.format
 
+@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SignupScreen(
@@ -30,14 +34,22 @@ fun SignupScreen(
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
-    var firstName by remember { mutableStateOf("") }
-    var lastName by remember { mutableStateOf("") }
+    var firstName by remember { mutableStateOf("User") }
+    var lastName by remember { mutableStateOf("Name") }
     var phoneNumber by remember { mutableStateOf("") }
     var selectedRole by remember { mutableStateOf("PATIENT") }
     var showError by remember { mutableStateOf(false) }
 
     val createUserState = userViewModel.createUserUiState
+    val errorMessage = userViewModel.errorMessage
     val currentUser by userViewModel.currentUser.collectAsState()
+
+    // Clear error when leaving the screen
+    DisposableEffect(Unit) {
+        onDispose {
+            userViewModel.clearError()
+        }
+    }
 
     LaunchedEffect(currentUser) {
         if (currentUser != null) {
@@ -46,14 +58,7 @@ fun SignupScreen(
     }
 
     LaunchedEffect(createUserState) {
-        when (createUserState) {
-            is BaseUiState.Error -> {
-                showError = true
-            }
-            else -> {
-                showError = false
-            }
-        }
+        showError = createUserState is BaseUiState.Error
     }
 
     Scaffold(
@@ -184,25 +189,28 @@ fun SignupScreen(
                 modifier = Modifier.fillMaxWidth()
             )
 
-            if (showError) {
+            if (showError && errorMessage != null) {
                 Text(
-                    text = "Error creating account. Please try again.",
+                    text = errorMessage,
                     color = MaterialTheme.colorScheme.error,
-                    style = MaterialTheme.typography.bodySmall
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.padding(top = 8.dp)
                 )
             }
 
+
             Button(
                 onClick = {
+
                     val request = CreateUserRequest(
                         username = username,
                         password = password,
                         email = email,
-                        firstName = firstName,
-                        lastName = lastName,
+                        fName = firstName,
+                        lName = lastName,
                         phoneNumber = phoneNumber.takeIf { it.isNotBlank() },
                         gender = Gender.OTHER,
-                        dateOfBirth = "2000-01-01", // Default value
+                        dob = "01-02-2025", // Default value
                         address = "Not specified", // Default value
                         role = selectedRole
                     )
@@ -236,4 +244,19 @@ fun SignupScreen(
 
 private fun String.capitalize(): String {
     return this.lowercase().replaceFirstChar { it.uppercase() }
+}
+private fun areFieldsValid(
+    username: String,
+    password: String,
+    email: String,
+    firstName: String,
+    lastName: String
+): Boolean {
+    return username.isNotBlank() &&
+            password.isNotBlank() &&
+            email.isNotBlank() &&
+            firstName.isNotBlank() &&
+            lastName.isNotBlank() &&
+            android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches() &&
+            password.length >= 6
 }

@@ -145,7 +145,7 @@ fun PatientDashboard(
                         .fillMaxWidth()
                 ) {
                     Text(
-                        text = "Patient: ${patient.firstName}",
+                        text = "Patient: ${patient.fName}",
                         style = MaterialTheme.typography.titleLarge
                     )
                     Text(

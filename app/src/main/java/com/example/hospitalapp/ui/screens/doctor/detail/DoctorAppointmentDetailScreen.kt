@@ -88,7 +88,7 @@ fun DoctorAppointmentDetailScreen(
 
                             // Patient Info
                             Text(
-                                text = "Patient: ${appointment.patient.firstName} ${appointment.patient.lastName}",
+                                text = "Patient: ${appointment.patient.fName} ${appointment.patient.lName}",
                                 style = MaterialTheme.typography.titleMedium
                             )
                             Text("Patient ID: ${appointment.patient.id}")

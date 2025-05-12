@@ -27,8 +27,8 @@ class UserPreferences(private val context: Context) {
             preferences[USER_ID_KEY] = user.id
             preferences[USERNAME_KEY] = user.username
             preferences[EMAIL_KEY] = user.email
-            preferences[FIRST_NAME_KEY] = user.firstName
-            preferences[LAST_NAME_KEY] = user.lastName
+            preferences[FIRST_NAME_KEY] = user.fName.toString()
+            preferences[LAST_NAME_KEY] = user.lName.toString()
         }
     }
 
@@ -57,8 +57,8 @@ class UserPreferences(private val context: Context) {
             id = userId,
             username = username,
             email = email,
-            firstName = firstName,
-            lastName = lastName
+            fName = firstName,
+            lName = lastName
         )
     }
 
@@ -72,7 +72,7 @@ class UserPreferences(private val context: Context) {
         val id: Long,
         val username: String,
         val email: String,
-        val firstName: String,
-        val lastName: String
+        val fName: String, // Changed from firstName
+        val lName: String  // Changed from lastName
     )
 }

@@ -286,7 +286,7 @@ private fun AppointmentDetailCard(
                         style = MaterialTheme.typography.titleMedium
                     )
                     Text(
-                        text = "Dr. ${appointment.doctor.firstName} ${appointment.doctor.lastName}",
+                        text = "Dr. ${appointment.doctor.fName} ${appointment.doctor.lName}",
                         style = MaterialTheme.typography.bodyMedium
                     )
                     Text(
