@@ -8,5 +8,9 @@ data class UserEntity(
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,
     val role: String,
+    val userName: String,
+    val email: String,
+    val phoneNumber: String,
+    val password: String,
     val accountCreationDate: String
 )
