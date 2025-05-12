@@ -40,5 +40,7 @@ data class AppointmentEntity(
     val createdAt: String,
     val updatedAt: String,
     val createdBy: String,
-    val updatedBy: String
+    val updatedBy: String,
+    val status: String,
+    val meetingLink: String
 )

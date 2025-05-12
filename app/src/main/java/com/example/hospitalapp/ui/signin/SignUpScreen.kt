@@ -221,6 +221,8 @@ private fun UserFormContent(
             Button(
                 onClick = {
                     userViewModel.createInitialUser(
+                        userName = username,
+                        password = password,
                         role = UserRole.valueOf(role)
                     )
                 },

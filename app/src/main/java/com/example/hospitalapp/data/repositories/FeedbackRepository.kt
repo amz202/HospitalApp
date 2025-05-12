@@ -50,6 +50,7 @@ class FeedbackRepositoryImpl @Inject constructor(
         return feedbackDao.getFeedbacksByPatient(patientId).map { it.toFeedbackResponse() }
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override suspend fun updateFeedback(id: Long, feedback: FeedbackRequest): FeedbackResponse {
         val existing = feedbackDao.getFeedbackById(id)
             ?: throw IllegalStateException("Feedback not found")
@@ -93,6 +94,7 @@ class FeedbackRepositoryImpl @Inject constructor(
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override suspend fun createFeedback(feedback: FeedbackRequest): FeedbackResponse {
         // Verify appointment exists and is completed
         val appointment = appointmentDao.getAppointmentById(feedback.appointmentId)

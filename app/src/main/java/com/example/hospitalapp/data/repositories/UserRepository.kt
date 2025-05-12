@@ -11,12 +11,14 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.example.hospitalapp.data.local.dao.UserDao
 import com.example.hospitalapp.data.local.entities.UserEntity
+import com.example.hospitalapp.data.local.extensions.toUserResponse
 import com.example.hospitalapp.network.model.CreateUserRequest
 import com.example.hospitalapp.network.model.LoginResponse
 import com.example.hospitalapp.network.model.SignupRequest
 import com.example.hospitalapp.network.model.UserResponse
 import com.example.hospitalapp.network.model.UserRole
 import kotlinx.coroutines.flow.first
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
@@ -25,7 +27,7 @@ import javax.inject.Inject
 private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "user_session")
 
 interface UserRepository {
-    suspend fun createInitialUser(role: UserRole): Long
+    suspend fun createInitialUser(username: String, password: String, role: UserRole): Long
     suspend fun getUserById(id: Long): UserResponse
     suspend fun deleteUser(id: Long)
     suspend fun getUsersByRole(role: UserRole): List<UserResponse>
@@ -43,10 +45,13 @@ class UserRepositoryImpl @Inject constructor(
             .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
     }
 
-    override suspend fun createInitialUser(role: UserRole): Long {
+    @RequiresApi(Build.VERSION_CODES.O)
+    override suspend fun createInitialUser(username: String, password: String, role: UserRole): Long {
         val userEntity = UserEntity(
+            password = password,
             role = role.toString(),
-            accountCreationDate = getCurrentDate()
+            accountCreationDate = LocalDate.now().toString(),
+            userName = username,
         )
         return userDao.insertUser(userEntity)
     }

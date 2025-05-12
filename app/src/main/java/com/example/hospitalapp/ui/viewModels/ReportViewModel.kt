@@ -62,9 +62,15 @@ class ReportViewModel(
                     timePeriodEnd = timePeriodEnd
                 )
 
-                val result = reportRepository.generateReport(reportRequest)
-                _selectedReport.value = result
-                reportDetailsUiState = BaseUiState.Success(result)
+                // First create the report and get its ID
+                val reportId = reportRepository.createReport(reportRequest)
+
+                // Then fetch the full report response using the ID
+                val reportResponse = reportRepository.getReportById(reportId)
+
+                // Update the states with the full report response
+                _selectedReport.value = reportResponse
+                reportDetailsUiState = BaseUiState.Success(reportResponse)
             } catch (e: Exception) {
                 reportDetailsUiState = BaseUiState.Error
             }
@@ -88,7 +94,7 @@ class ReportViewModel(
         viewModelScope.launch {
             patientReportsUiState = BaseUiState.Loading
             try {
-                val result = reportRepository.getReportsByPatient(patientId)
+                val result = reportRepository.getPatientReports(patientId)
                 patientReportsUiState = BaseUiState.Success(result)
             } catch (e: Exception) {
                 patientReportsUiState = BaseUiState.Error
@@ -96,17 +102,6 @@ class ReportViewModel(
         }
     }
 
-    fun getAllReports() {
-        viewModelScope.launch {
-            reportsUiState = BaseUiState.Loading
-            try {
-                val result = reportRepository.getAllReports()
-                reportsUiState = BaseUiState.Success(result)
-            } catch (e: Exception) {
-                reportsUiState = BaseUiState.Error
-            }
-        }
-    }
 
     companion object {
         val Factory: ViewModelProvider.Factory = viewModelFactory {

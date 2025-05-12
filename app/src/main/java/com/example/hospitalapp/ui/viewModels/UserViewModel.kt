@@ -49,11 +49,11 @@ class UserViewModel(
     val errorMessage: StateFlow<String?> = _errorMessage
 
 
-    fun createInitialUser(role: UserRole) {
+    fun createInitialUser(role: UserRole, userName: String, password: String) {
         viewModelScope.launch {
             createUserUiState = BaseUiState.Loading
             try {
-                val userId = userRepository.createInitialUser(role)
+                val userId = userRepository.createInitialUser(role=role, username = userName, password=password)
                 createUserUiState = BaseUiState.Success(userId)
             } catch (e: Exception) {
                 _errorMessage.value = e.message ?: "Error creating user"
