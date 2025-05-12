@@ -1,5 +1,6 @@
 package com.example.hospitalapp.ui.viewModels
 
+import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -10,6 +11,7 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.hospitalapp.HospitalApplication
 import com.example.hospitalapp.data.repositories.PatientRepository
+import com.example.hospitalapp.network.model.PatientMedicalInfoRequest
 import com.example.hospitalapp.network.model.PatientRequest
 import com.example.hospitalapp.network.model.PatientResponse
 import com.example.hospitalapp.network.model.ReportResponse
@@ -20,7 +22,7 @@ import kotlinx.coroutines.launch
 import java.io.IOException
 
 class PatientViewModel(
-    private val patientRepository: PatientRepository,
+    private val patientRepository: PatientRepository
 ) : ViewModel() {
 
     var patientsUiState: BaseUiState<List<PatientResponse>> by mutableStateOf(BaseUiState.Loading)
@@ -35,7 +37,7 @@ class PatientViewModel(
     var patientReportsUiState: BaseUiState<List<ReportResponse>> by mutableStateOf(BaseUiState.Loading)
         private set
 
-    var updatePatientUiState: BaseUiState<PatientResponse> by mutableStateOf(BaseUiState.Success(null))
+    var updatePatientUiState: BaseUiState<PatientResponse> by mutableStateOf(BaseUiState.Loading)
         private set
 
     var errorMessage: String? by mutableStateOf(null)
@@ -73,21 +75,6 @@ class PatientViewModel(
         }
     }
 
-    fun createPatient(patient: PatientRequest) {
-        viewModelScope.launch {
-            patientsUiState = BaseUiState.Loading
-            try {
-                patientRepository.createPatient(patient)
-                getPatients() // Refresh the list
-            } catch (e: Exception) {
-                patientsUiState = BaseUiState.Error
-            }
-        }
-    }
-
-    // Removed redundant updatePatient method and updatePatientInfo method
-    // Combined functionality into updatePatientAfterSignup
-
     fun getPatientVitals(patientId: Long) {
         viewModelScope.launch {
             patientVitalsUiState = BaseUiState.Loading
@@ -112,51 +99,33 @@ class PatientViewModel(
         }
     }
 
-    fun updatePatientAfterSignup(
+
+    fun updatePatientMedicalInfo(
         patientId: Long,
-        bloodGroup: String,
-        emergencyContact: String,
-        allergies: String,
-        primaryDoctorId: Long? = null
+        request: PatientMedicalInfoRequest
     ) {
         viewModelScope.launch {
             try {
                 updatePatientUiState = BaseUiState.Loading
                 errorMessage = null
 
-                val currentUser = UserViewModel.currentUser.value ?: throw IllegalStateException("No user found")
-
-                val patientRequest = PatientRequest(
-                    fName = currentUser.fName,
-                    lName = currentUser.lName,
-                    email = currentUser.email,
-                    phoneNumber = currentUser.phoneNumber ?: "",
-                    password = "", // Password already set during signup
-                    dob = currentUser.dob,
-                    bloodGroup = bloodGroup,
-                    emergencyContact = emergencyContact,
-                    allergies = allergies,
-                    primaryDoctorId = primaryDoctorId
-                )
-
-                val result = patientRepository.updatePatient(patientId, patientRequest)
+                val result = patientRepository.updatePatient(patientId, request)
                 _selectedPatient.value = result
                 updatePatientUiState = BaseUiState.Success(result)
             } catch (e: Exception) {
                 updatePatientUiState = BaseUiState.Error
                 errorMessage = when {
-                    e is IllegalStateException -> "User information not found"
                     e.message?.contains("400") == true -> "Invalid input data"
                     e is IOException -> "Network error: Please check your connection"
-                    else -> "Error updating patient information: ${e.message}"
+                    else -> "Error updating medical information: ${e.message}"
                 }
-                Log.e("PatientViewModel", "Error updating patient info", e)
+                Log.e("PatientViewModel", "Error updating medical info", e)
             }
         }
     }
 
     fun clearUpdateState() {
-        updatePatientUiState = BaseUiState.Success(null)
+        updatePatientUiState = BaseUiState.Loading
         errorMessage = null
     }
 
@@ -165,7 +134,7 @@ class PatientViewModel(
             initializer {
                 val application = (this[ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY] as HospitalApplication)
                 PatientViewModel(
-                    patientRepository = application.container.patientRepository,
+                    patientRepository = application.container.patientRepository
                 )
             }
         }
