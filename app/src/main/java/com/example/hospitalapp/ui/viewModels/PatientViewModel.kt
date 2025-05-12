@@ -17,9 +17,10 @@ import com.example.hospitalapp.network.model.VitalsResponse
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import java.io.IOException
 
 class PatientViewModel(
-    private val patientRepository: PatientRepository
+    private val patientRepository: PatientRepository,
 ) : ViewModel() {
 
     var patientsUiState: BaseUiState<List<PatientResponse>> by mutableStateOf(BaseUiState.Loading)
@@ -32,6 +33,12 @@ class PatientViewModel(
         private set
 
     var patientReportsUiState: BaseUiState<List<ReportResponse>> by mutableStateOf(BaseUiState.Loading)
+        private set
+
+    var updatePatientUiState: BaseUiState<PatientResponse> by mutableStateOf(BaseUiState.Success(null))
+        private set
+
+    var errorMessage: String? by mutableStateOf(null)
         private set
 
     private val _patients = MutableStateFlow<List<PatientResponse>>(emptyList())
@@ -78,18 +85,8 @@ class PatientViewModel(
         }
     }
 
-    fun updatePatient(id: Long, patient: PatientRequest) {
-        viewModelScope.launch {
-            patientDetailsUiState = BaseUiState.Loading
-            try {
-                val result = patientRepository.updatePatient(id, patient)
-                _selectedPatient.value = result
-                patientDetailsUiState = BaseUiState.Success(result)
-            } catch (e: Exception) {
-                patientDetailsUiState = BaseUiState.Error
-            }
-        }
-    }
+    // Removed redundant updatePatient method and updatePatientInfo method
+    // Combined functionality into updatePatientAfterSignup
 
     fun getPatientVitals(patientId: Long) {
         viewModelScope.launch {
@@ -115,12 +112,60 @@ class PatientViewModel(
         }
     }
 
+    fun updatePatientAfterSignup(
+        patientId: Long,
+        bloodGroup: String,
+        emergencyContact: String,
+        allergies: String,
+        primaryDoctorId: Long? = null
+    ) {
+        viewModelScope.launch {
+            try {
+                updatePatientUiState = BaseUiState.Loading
+                errorMessage = null
+
+                val currentUser = UserViewModel.currentUser.value ?: throw IllegalStateException("No user found")
+
+                val patientRequest = PatientRequest(
+                    fName = currentUser.fName,
+                    lName = currentUser.lName,
+                    email = currentUser.email,
+                    phoneNumber = currentUser.phoneNumber ?: "",
+                    password = "", // Password already set during signup
+                    dob = currentUser.dob,
+                    bloodGroup = bloodGroup,
+                    emergencyContact = emergencyContact,
+                    allergies = allergies,
+                    primaryDoctorId = primaryDoctorId
+                )
+
+                val result = patientRepository.updatePatient(patientId, patientRequest)
+                _selectedPatient.value = result
+                updatePatientUiState = BaseUiState.Success(result)
+            } catch (e: Exception) {
+                updatePatientUiState = BaseUiState.Error
+                errorMessage = when {
+                    e is IllegalStateException -> "User information not found"
+                    e.message?.contains("400") == true -> "Invalid input data"
+                    e is IOException -> "Network error: Please check your connection"
+                    else -> "Error updating patient information: ${e.message}"
+                }
+                Log.e("PatientViewModel", "Error updating patient info", e)
+            }
+        }
+    }
+
+    fun clearUpdateState() {
+        updatePatientUiState = BaseUiState.Success(null)
+        errorMessage = null
+    }
+
     companion object {
         val Factory: ViewModelProvider.Factory = viewModelFactory {
             initializer {
                 val application = (this[ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY] as HospitalApplication)
                 PatientViewModel(
-                    patientRepository = application.container.patientRepository
+                    patientRepository = application.container.patientRepository,
                 )
             }
         }
