@@ -2,7 +2,6 @@ package com.example.hospitalapp.data.local.entities
 
 import androidx.room.Entity
 import androidx.room.ForeignKey
-import androidx.room.PrimaryKey
 
 @Entity(
     tableName = "appointments",
@@ -19,16 +18,19 @@ import androidx.room.PrimaryKey
             childColumns = ["doctorId"],
             onDelete = ForeignKey.CASCADE
         )
-    ]
+    ],
+    primaryKeys = ["id"]
 )
 data class AppointmentEntity(
-    @PrimaryKey(autoGenerate = true)
     val id: Long = 0,
     val patientId: Long,
     val doctorId: Long,
     val scheduledTime: String,
     val status: String,
-    val notes: String? = null,
     val type: String,
-    val createdAt: String = System.currentTimeMillis().toString()
+    val notes: String?,
+    val reason: String?,
+    val meetingLink: String?,
+    val createdAt: String,
+    val updatedAt: String
 )

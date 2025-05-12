@@ -5,21 +5,21 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class DoctorResponse(
     val id: Long,
-    val fName: String, // Changed from firstName
-    val lName: String, // Changed from lastName
+    val username: String,
     val email: String,
-    val phoneNumber: String,
+    val fName: String,
+    val lName: String,
+    val phoneNumber: String?,
+    val gender: String,
+    val dob: String,
+    val address: String,
+    val role: String,
+    val accountCreationDate: String,
+    // Doctor-specific fields
     val specialization: String,
-    val licenseNumber: String,
     val qualification: String,
-    val experienceYears: Int,
-    val consultationFee: Double,
-    val availableForEmergency: Boolean,
-    val active: Boolean,
-    val createdAt: String,
-    val appointments: List<AppointmentResponse> = emptyList(),
-    val feedbacks: List<FeedbackResponse> = emptyList(),
-    val prescribedMedications: List<MedicationResponse> = emptyList()
+    val experience: Int,
+    val availableForEmergency: Boolean
 )
 
 @Serializable

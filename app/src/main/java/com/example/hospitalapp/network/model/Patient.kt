@@ -21,19 +21,20 @@ data class PatientRequest(
 @Serializable
 data class PatientResponse(
     val id: Long,
+    val username: String,
+    val email: String,
     val fName: String,
     val lName: String,
-    val email: String,
     val phoneNumber: String?,
-    val bloodGroup: String?,
-    val emergencyContact: String?,
-    val allergies: String?,
-    val gender: Gender,
+    val gender: String,
     val dob: String,
     val address: String,
-    val active: Boolean = true,
-    val createdAt: String? = null,
-    val updatedAt: String? = null
+    val role: String,
+    val accountCreationDate: String,
+    // Patient-specific fields
+    val bloodGroup: String?,
+    val allergies: List<String>,
+    val medicalHistory: List<String>
 )
 
 @Serializable

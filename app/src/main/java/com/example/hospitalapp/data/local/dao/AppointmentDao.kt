@@ -6,6 +6,9 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface AppointmentDao {
+    @Query("SELECT * FROM appointments")
+    suspend fun getAllAppointments(): List<AppointmentEntity>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAppointment(appointment: AppointmentEntity): Long
 
@@ -13,10 +16,13 @@ interface AppointmentDao {
     suspend fun getAppointmentById(id: Long): AppointmentEntity?
 
     @Query("SELECT * FROM appointments WHERE patientId = :patientId ORDER BY scheduledTime DESC")
-    fun getPatientAppointments(patientId: Long): Flow<List<AppointmentEntity>>
+    suspend fun getPatientAppointments(patientId: Long): List<AppointmentEntity>
 
     @Query("SELECT * FROM appointments WHERE doctorId = :doctorId ORDER BY scheduledTime DESC")
-    fun getDoctorAppointments(doctorId: Long): Flow<List<AppointmentEntity>>
+    suspend fun getDoctorAppointments(doctorId: Long): List<AppointmentEntity>
+
+    @Query("SELECT * FROM appointments WHERE status = :status ORDER BY scheduledTime DESC")
+    suspend fun getAppointmentsByStatus(status: String): List<AppointmentEntity>
 
     @Update
     suspend fun updateAppointment(appointment: AppointmentEntity)

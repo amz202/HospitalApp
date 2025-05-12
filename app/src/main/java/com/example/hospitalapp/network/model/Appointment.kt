@@ -7,10 +7,10 @@ data class AppointmentResponse(
     val patient: PatientResponse,
     val doctor: DoctorResponse,
     val scheduledTime: String,
-    val type: AppointmentType,
     val status: AppointmentStatus,
-    val reason: String,
+    val type: String,
     val notes: String?,
+    val reason: String?,
     val meetingLink: String?,
     val createdAt: String,
     val updatedAt: String
@@ -20,12 +20,22 @@ data class AppointmentRequest(
     val patientId: Long,
     val doctorId: Long,
     val scheduledTime: String,
-    val type: AppointmentType,
-    val reason: String
+    val type: String,
+    val notes: String? = null,
+    val reason: String? = null
 )
 
 enum class AppointmentStatus {
-    REQUESTED, APPROVED, DECLINED, COMPLETED, CANCELLED
+    PENDING,
+    CONFIRMED,
+    CANCELLED,
+    COMPLETED;
+
+    companion object {
+        fun fromString(value: String): AppointmentStatus {
+            return AppointmentStatus.entries.find { it.name == value.uppercase() } ?: PENDING
+        }
+    }
 }
 
 enum class AppointmentType {
