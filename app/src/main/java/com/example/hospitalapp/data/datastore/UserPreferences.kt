@@ -21,7 +21,7 @@ class UserPreferences(private val context: Context) {
         private val EMAIL_KEY = stringPreferencesKey("email")
         private val FIRST_NAME_KEY = stringPreferencesKey("first_name")
         private val LAST_NAME_KEY = stringPreferencesKey("last_name")
-        private val ROLES_KEY = stringSetPreferencesKey("roles")  // Add this
+        private val ROLE_KEY = stringPreferencesKey("role")
         private val GENDER_KEY = stringPreferencesKey("gender")   // Add this
         private val DOB_KEY = stringPreferencesKey("dob")        // Add this
         private val ADDRESS_KEY = stringPreferencesKey("address") // Add this
@@ -34,7 +34,7 @@ class UserPreferences(private val context: Context) {
             preferences[EMAIL_KEY] = user.email
             preferences[FIRST_NAME_KEY] = user.fName
             preferences[LAST_NAME_KEY] = user.lName
-            preferences[ROLES_KEY] = user.roles
+            preferences[ROLE_KEY] = user.role
             preferences[GENDER_KEY] = user.gender.toString()
             preferences[DOB_KEY] = user.dob
             preferences[ADDRESS_KEY] = user.address
@@ -61,7 +61,7 @@ class UserPreferences(private val context: Context) {
         val firstName = preferences[FIRST_NAME_KEY] ?: return null
         val lastName = preferences[LAST_NAME_KEY] ?: return null
         val userId = preferences[USER_ID_KEY] ?: return null
-        val roles = preferences[ROLES_KEY] ?: return null
+        val roles = preferences[ROLE_KEY] ?: return null
         val gender = preferences[GENDER_KEY]?.let { Gender.valueOf(it) } ?: return null
         val dob = preferences[DOB_KEY] ?: return null
         val address = preferences[ADDRESS_KEY] ?: return null
@@ -75,7 +75,7 @@ class UserPreferences(private val context: Context) {
             gender = gender,
             dob = dob,
             address = address,
-            roles = roles
+            role = roles
         )
     }
 
@@ -94,6 +94,6 @@ class UserPreferences(private val context: Context) {
         val gender: Gender,
         val dob: String,
         val address: String,
-        val roles: Set<String>
+        val role: String
     )
 }

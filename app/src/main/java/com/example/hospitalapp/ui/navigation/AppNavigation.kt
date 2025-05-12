@@ -1,6 +1,7 @@
 package com.example.hospitalapp.ui.navigation
 
 import android.os.Build
+import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.*
@@ -54,11 +55,11 @@ fun AppNavigation(
         composable<LoginScreenNav> {
             LoginScreen(
                 userViewModel = userViewModel,
-                onLoginSuccess = { roles ->
-                    when {
-                        roles.contains("PATIENT") -> navController.navigate(PatientDashboardNav)
-                        roles.contains("DOCTOR") -> navController.navigate(DoctorDashboardNav)
-                        // Add other role checks as needed
+                onLoginSuccess = { role ->  // Single role
+                    when (role) {
+                        "PATIENT" -> navController.navigate(PatientDashboardNav)
+                        "DOCTOR" -> navController.navigate(DoctorDashboardNav)
+                        else -> Log.e("Navigation", "Unknown role: $role")
                     }
                 },
                 onSignUpClick = {

@@ -14,6 +14,7 @@ import com.example.hospitalapp.HospitalApplication
 import com.example.hospitalapp.data.datastore.UserPreferences
 import com.example.hospitalapp.data.repositories.UserRepository
 import com.example.hospitalapp.network.model.CreateUserRequest
+import com.example.hospitalapp.network.model.LoginResponse
 import com.example.hospitalapp.network.model.UserResponse
 import com.google.firebase.crashlytics.buildtools.reloc.org.apache.http.HttpException
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -27,8 +28,8 @@ class UserViewModel(
 
 ) : ViewModel(){
     private val TAG = "UserViewModel"
-    private var _loginState = mutableStateOf<BaseUiState<Long?>>(BaseUiState.Success(null))
-    val loginState: State<BaseUiState<Long?>> = _loginState
+    private var _loginState = mutableStateOf<BaseUiState<LoginResponse?>>(BaseUiState.Success(null))
+    val loginState: State<BaseUiState<LoginResponse?>> = _loginState
 
     private val _currentUser = MutableStateFlow<UserResponse?>(null)
     val currentUser: StateFlow<UserResponse?> = _currentUser
@@ -100,12 +101,9 @@ class UserViewModel(
         viewModelScope.launch {
             try {
                 _loginState.value = BaseUiState.Loading
-                val response = userRepository.login(username, password)
+                val response = userRepository.login(username, password)  // Returns LoginResponse
                 userPreferences.saveUserId(response.userId)
-
-                // After successful login, get user details
                 getUserById(response.userId)
-
                 _loginState.value = BaseUiState.Success(response)
             } catch (e: Exception) {
                 _loginState.value = BaseUiState.Error
@@ -153,16 +151,10 @@ class UserViewModel(
         }
     }
     fun hasRole(role: String): Boolean {
-        return _currentUser.value?.roles?.contains(role) ?: false
+        return _currentUser.value?.role == role
     }
 
     fun getPrimaryRole(): String? {
-        val roles = _currentUser.value?.roles
-        return when {
-            roles?.contains("PATIENT") == true -> "PATIENT"
-            roles?.contains("DOCTOR") == true -> "DOCTOR"
-            roles?.contains("ADMIN") == true -> "ADMIN"
-            else -> null
-        }
+        return _currentUser.value?.role
     }
 }

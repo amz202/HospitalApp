@@ -13,7 +13,7 @@ data class UserResponse(
     val gender: Gender,
     val dob: String,  // Changed from dateOfBirth
     val address: String,
-    val roles: Set<String>,
+    val role: String,  // Change from Set<String> to String
     val accountCreationDate: String
 )
 
@@ -39,7 +39,7 @@ data class LoginRequest(
 @Serializable
 data class LoginResponse(
     val userId: Long,
-    val role: String  // Single role as String, not Set<String>
+    val role: String  // Single role string as returned by backend
 )
 
 enum class Gender {
