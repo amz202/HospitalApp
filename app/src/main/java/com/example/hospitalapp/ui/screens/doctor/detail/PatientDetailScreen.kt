@@ -4,28 +4,28 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.example.hospitalapp.network.model.AppointmentResponse
-import com.example.hospitalapp.network.model.AppointmentStatus
 import com.example.hospitalapp.ui.navigation.DoctorAppointmentBookingNav
 import com.example.hospitalapp.ui.viewModels.*
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import com.example.hospitalapp.network.model.AppointmentStatus
 
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PatientDetailScreen(
     patientId: Long,
+    doctorId:Long,
     patientViewModel: PatientViewModel,
     vitalsViewModel: VitalsViewModel,
     medicationViewModel: MedicationViewModel,
@@ -39,7 +39,7 @@ fun PatientDetailScreen(
     val appointmentsState = appointmentViewModel.appointmentsUiState
 
     LaunchedEffect(patientId) {
-        patientViewModel.getPatientDetails(patientId)
+        patientViewModel.getPatientById(patientId)
         vitalsViewModel.getVitalsByPatient(patientId)
         medicationViewModel.getPatientMedications(patientId)
         appointmentViewModel.getPatientAppointments(patientId)
@@ -59,12 +59,7 @@ fun PatientDetailScreen(
         floatingActionButton = {
             FloatingActionButton(
                 onClick = {
-                    navController.navigate(
-                        DoctorAppointmentBookingNav(
-                            patientId = patientId,
-                            doctorId = 1L // Replace with actual doctorId from viewModel
-                        )
-                    )
+                    navController.navigate(DoctorAppointmentBookingNav(patientId, doctorId))
                 }
             ) {
                 Icon(Icons.Default.Add, "Book Appointment")
@@ -103,21 +98,20 @@ fun PatientDetailScreen(
                                     text = "${patient.fName} ${patient.lName}",
                                     style = MaterialTheme.typography.titleLarge
                                 )
-                                Spacer(modifier = Modifier.height(8.dp))
+                                Text("ID: ${patient.id}")
+                                Text("Gender: ${patient.gender}")
                                 Text("DOB: ${patient.dob}")
                                 Text("Blood Group: ${patient.bloodGroup}")
-                                Text("Phone: ${patient.phoneNumber}")
-                                if (patient.allergies?.isNotBlank() == true) {
-                                    Text(
-                                        "Allergies: ${patient.allergies}",
-                                        color = MaterialTheme.colorScheme.error
-                                    )
+                                if (!patient.allergies.isNullOrEmpty()) {
+                                    Text("Allergies: ${patient.allergies}")
                                 }
+                                Text("Phone: ${patient.phoneNumber}")
+                                Text("Address: ${patient.address}")
                             }
                         }
                     }
 
-                    // Recent Vitals
+                    // Vitals Section
                     item {
                         ElevatedCard(
                             modifier = Modifier.fillMaxWidth()
@@ -138,12 +132,18 @@ fun PatientDetailScreen(
                                         )
                                     }
                                     is BaseUiState.Success -> {
-                                        val recentVitals = vitalsState.data.firstOrNull()
-                                        if (recentVitals != null) {
+                                        if (vitalsState.data.isNotEmpty()) {
+                                            val latestVitals = vitalsState.data.first()
                                             Spacer(modifier = Modifier.height(8.dp))
-                                            Text("Temperature: ${recentVitals.temperature}°C")
-                                            Text("Heart Rate: ${recentVitals.heartRate} bpm")
-                                            Text("Recorded: ${recentVitals.recordedAt}")
+                                            Text("Heart Rate: ${latestVitals.heartRate}")
+                                            Text("Temperature: ${latestVitals.temperature}°C")
+                                            Text("Respiratory Rate: ${latestVitals.respiratoryRate}")
+                                            Text(
+                                                "Recorded: ${
+                                                    LocalDateTime.parse(latestVitals.recordedAt)
+                                                        .format(DateTimeFormatter.ofPattern("MMM dd, yyyy HH:mm"))
+                                                }"
+                                            )
                                         } else {
                                             Text("No vitals recorded")
                                         }
@@ -159,7 +159,7 @@ fun PatientDetailScreen(
                         }
                     }
 
-                    // Current Medications
+                    // Medications Section
                     item {
                         ElevatedCard(
                             modifier = Modifier.fillMaxWidth()
@@ -180,11 +180,15 @@ fun PatientDetailScreen(
                                         )
                                     }
                                     is BaseUiState.Success -> {
-                                        val currentMeds = medicationsState.data
-                                        if (currentMeds.isNotEmpty()) {
+                                        if (medicationsState.data.isNotEmpty()) {
                                             Spacer(modifier = Modifier.height(8.dp))
-                                            currentMeds.forEach { medication ->
+                                            medicationsState.data.forEach { medication ->
                                                 Text("${medication.name} - ${medication.dosage}")
+                                                Text(
+                                                    "Instructions: ${medication.instructions}",
+                                                    style = MaterialTheme.typography.bodySmall
+                                                )
+                                                Spacer(modifier = Modifier.height(4.dp))
                                             }
                                         } else {
                                             Text("No current medications")
@@ -201,7 +205,7 @@ fun PatientDetailScreen(
                         }
                     }
 
-                    // Recent Appointments
+                    // Appointments Section
                     item {
                         ElevatedCard(
                             modifier = Modifier.fillMaxWidth()
@@ -222,16 +226,38 @@ fun PatientDetailScreen(
                                         )
                                     }
                                     is BaseUiState.Success -> {
-                                        val recentAppointments = appointmentsState.data
-                                            .sortedByDescending { it.scheduledTime }
-                                            .take(3)
-                                        if (recentAppointments.isNotEmpty()) {
+                                        if (appointmentsState.data.isNotEmpty()) {
                                             Spacer(modifier = Modifier.height(8.dp))
-                                            recentAppointments.forEach { appointment ->
-                                                AppointmentItem(appointment)
+                                            appointmentsState.data.take(5).forEach { appointment ->
+                                                ListItem(
+                                                    headlineContent = {
+                                                        Text(
+                                                            LocalDateTime.parse(appointment.scheduledTime)
+                                                                .format(DateTimeFormatter.ofPattern("MMM dd, yyyy HH:mm"))
+                                                        )
+                                                    },
+                                                    supportingContent = {
+                                                        Text(appointment.type)
+                                                    },
+                                                    trailingContent = {
+                                                        AssistChip(
+                                                            onClick = { },
+                                                            label = { Text(appointment.status.name) },
+                                                            colors = AssistChipDefaults.assistChipColors(
+                                                                containerColor = when (appointment.status) {
+                                                                    AppointmentStatus.COMPLETED -> MaterialTheme.colorScheme.primaryContainer
+                                                                    AppointmentStatus.PENDING -> MaterialTheme.colorScheme.secondaryContainer
+                                                                    AppointmentStatus.CANCELLED -> MaterialTheme.colorScheme.errorContainer
+                                                                    AppointmentStatus.CONFIRMED -> MaterialTheme.colorScheme.tertiaryContainer
+                                                                    else -> MaterialTheme.colorScheme.errorContainer
+                                                                }
+                                                            )
+                                                        )
+                                                    }
+                                                )
                                             }
                                         } else {
-                                            Text("No recent appointments")
+                                            Text("No appointments found")
                                         }
                                     }
                                     is BaseUiState.Error -> {
@@ -251,56 +277,9 @@ fun PatientDetailScreen(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
                 ) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Error,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.error
-                        )
-                        Text(
-                            "Error loading patient details",
-                            color = MaterialTheme.colorScheme.error
-                        )
-                        Button(onClick = {
-                            patientViewModel.getPatientDetails(patientId)
-                        }) {
-                            Text("Retry")
-                        }
-                    }
+                    Text("Error loading patient details")
                 }
             }
         }
-    }
-}
-
-@RequiresApi(Build.VERSION_CODES.O)
-@Composable
-private fun AppointmentItem(appointment: AppointmentResponse) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 4.dp),
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        Text(
-            text = LocalDateTime.parse(appointment.scheduledTime)
-                .format(DateTimeFormatter.ofPattern("MMM dd, yyyy")),
-            style = MaterialTheme.typography.bodyMedium
-        )
-        AssistChip(
-            onClick = { },
-            label = { Text(appointment.status.name) },
-            colors = AssistChipDefaults.assistChipColors(
-                containerColor = when (appointment.status) {
-                    AppointmentStatus.COMPLETED -> MaterialTheme.colorScheme.primaryContainer
-                    AppointmentStatus.APPROVED -> MaterialTheme.colorScheme.secondaryContainer
-                    AppointmentStatus.REQUESTED -> MaterialTheme.colorScheme.tertiaryContainer
-                    else -> MaterialTheme.colorScheme.errorContainer
-                }
-            )
-        )
     }
 }

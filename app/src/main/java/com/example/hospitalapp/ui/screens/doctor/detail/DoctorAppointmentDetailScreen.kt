@@ -4,8 +4,8 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -24,16 +24,15 @@ import java.time.format.DateTimeFormatter
 fun DoctorAppointmentDetailScreen(
     appointmentId: Long,
     doctorId: Long,
-    appointmentViewModel: AppointmentViewModel,
+    viewModel: AppointmentViewModel,
     navController: NavController,
     modifier: Modifier = Modifier
 ) {
-    val appointmentState = appointmentViewModel.appointmentDetailsUiState
     var showStatusDialog by remember { mutableStateOf(false) }
-    val currentDateTime = LocalDateTime.parse("2025-05-11 10:07:58", DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
+    val appointmentState = viewModel.appointmentDetailsUiState
 
-    LaunchedEffect(appointmentId) {
-        appointmentViewModel.getAppointmentById(appointmentId)
+    LaunchedEffect(appointmentId, doctorId) {
+        viewModel.getDoctorAppointments(doctorId)
     }
 
     Scaffold(
@@ -43,11 +42,6 @@ fun DoctorAppointmentDetailScreen(
                 navigationIcon = {
                     IconButton(onClick = { navController.navigateUp() }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back")
-                    }
-                },
-                actions = {
-                    IconButton(onClick = { showStatusDialog = true }) {
-                        Icon(Icons.Default.Edit, "Update Status")
                     }
                 }
             )
@@ -84,7 +78,7 @@ fun DoctorAppointmentDetailScreen(
                                 text = "Appointment Information",
                                 style = MaterialTheme.typography.titleLarge
                             )
-                            Spacer(modifier = Modifier.height(8.dp))
+                            Spacer(modifier = Modifier.height(16.dp))
 
                             // Patient Info
                             Text(
@@ -93,7 +87,7 @@ fun DoctorAppointmentDetailScreen(
                             )
                             Text("Patient ID: ${appointment.patient.id}")
 
-                            Spacer(modifier = Modifier.height(8.dp))
+                            Spacer(modifier = Modifier.height(16.dp))
 
                             // Appointment Details
                             Text(
@@ -111,15 +105,30 @@ fun DoctorAppointmentDetailScreen(
                             Text("Type: ${appointment.type}")
                             Text("Reason: ${appointment.reason}")
 
-                            Spacer(modifier = Modifier.height(8.dp))
+                            Spacer(modifier = Modifier.height(16.dp))
+
+                            // Status Chip
                             AssistChip(
                                 onClick = { showStatusDialog = true },
                                 label = { Text(appointment.status.name) },
+                                leadingIcon = {
+                                    Icon(
+                                        imageVector = when (appointment.status) {
+                                            AppointmentStatus.COMPLETED -> Icons.Default.CheckCircle
+                                            AppointmentStatus.CANCELLED -> Icons.Default.Cancel
+                                            AppointmentStatus.PENDING -> Icons.Default.CheckCircle
+                                            AppointmentStatus.CONFIRMED -> Icons.Default.CheckCircle
+                                        },
+                                        contentDescription = null
+                                    )
+                                },
                                 colors = AssistChipDefaults.assistChipColors(
                                     containerColor = when (appointment.status) {
                                         AppointmentStatus.COMPLETED -> MaterialTheme.colorScheme.primaryContainer
-                                        AppointmentStatus.APPROVED -> MaterialTheme.colorScheme.secondaryContainer
-                                        AppointmentStatus.REQUESTED -> MaterialTheme.colorScheme.tertiaryContainer
+                                        AppointmentStatus.CANCELLED -> MaterialTheme.colorScheme.errorContainer
+                                        AppointmentStatus.PENDING -> MaterialTheme.colorScheme.primaryContainer
+                                        AppointmentStatus.CONFIRMED -> MaterialTheme.colorScheme.primaryContainer
+
                                         else -> MaterialTheme.colorScheme.errorContainer
                                     }
                                 )
@@ -138,16 +147,13 @@ fun DoctorAppointmentDetailScreen(
                         ) {
                             Text(
                                 text = "Notes",
-                                style = MaterialTheme.typography.titleLarge
+                                style = MaterialTheme.typography.titleMedium
                             )
                             Spacer(modifier = Modifier.height(8.dp))
                             if (!appointment.notes.isNullOrBlank()) {
                                 Text(
                                     text = appointment.notes,
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(vertical = 8.dp)
+                                    style = MaterialTheme.typography.bodyMedium
                                 )
                             } else {
                                 Text(
@@ -160,6 +166,7 @@ fun DoctorAppointmentDetailScreen(
                     }
                 }
 
+                // Status Update Dialog
                 if (showStatusDialog) {
                     AlertDialog(
                         onDismissRequest = { showStatusDialog = false },
@@ -171,19 +178,22 @@ fun DoctorAppointmentDetailScreen(
                                         modifier = Modifier
                                             .fillMaxWidth()
                                             .padding(vertical = 8.dp),
-                                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                        verticalAlignment = Alignment.CenterVertically
                                     ) {
                                         RadioButton(
                                             selected = status == appointment.status,
                                             onClick = {
-                                                appointmentViewModel.updateAppointmentStatus(
-                                                    appointment.id,
+                                                viewModel.updateAppointmentStatus(
+                                                    appointmentId,
                                                     status
                                                 )
                                                 showStatusDialog = false
                                             }
                                         )
-                                        Text(status.name)
+                                        Text(
+                                            text = status.name,
+                                            modifier = Modifier.padding(start = 8.dp)
+                                        )
                                     }
                                 }
                             }
@@ -201,25 +211,7 @@ fun DoctorAppointmentDetailScreen(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
                 ) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Error,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.error
-                        )
-                        Text(
-                            "Error loading appointment details",
-                            color = MaterialTheme.colorScheme.error
-                        )
-                        Button(onClick = {
-                            appointmentViewModel.getAppointmentById(appointmentId)
-                        }) {
-                            Text("Retry")
-                        }
-                    }
+                    Text("Error loading appointment details")
                 }
             }
         }
