@@ -8,9 +8,6 @@ interface PatientDetailDao {
     @Query("SELECT * FROM patient_details WHERE userId = :userId")
     suspend fun getPatientDetailByUserId(userId: Long): PatientDetailEntity?
 
-    @Query("SELECT * FROM patient_details WHERE id = :id")
-    suspend fun getPatientDetailById(id: Long): PatientDetailEntity?
-
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertPatientDetail(patientDetail: PatientDetailEntity): Long
 
@@ -20,6 +17,10 @@ interface PatientDetailDao {
     @Delete
     suspend fun deletePatientDetail(patientDetail: PatientDetailEntity)
 
-    @Query("SELECT * FROM patient_details")
-    suspend fun getAllPatientDetails(): List<PatientDetailEntity>
+    @Query("""
+        SELECT p.* FROM patient_details p 
+        INNER JOIN users u ON p.userId = u.id 
+        WHERE u.accountCreationDate >= :startDate
+    """)
+    suspend fun getNewPatients(startDate: String): List<PatientDetailEntity>
 }

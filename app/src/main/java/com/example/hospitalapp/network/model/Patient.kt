@@ -23,21 +23,13 @@ data class PatientRequest(
 @Serializable
 data class PatientResponse(
     val id: Long,
-    val username: String,
-    val email: String,
-    val fName: String,
-    val lName: String,
-    val phoneNumber: String?,
-    val gender: String,
-    val dob: String,
-    val address: String,
     val role: String,
     val accountCreationDate: String,
-    // Patient-specific fields
     val bloodGroup: String?,
     val allergies: List<String>,
     val medicalHistory: List<String>
 )
+
 
 @Serializable
 data class PatientUpdateRequest(

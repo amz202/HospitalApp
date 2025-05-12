@@ -6,15 +6,7 @@ import java.time.LocalDate
 @Serializable
 data class UserResponse(
     val id: Long,
-    val username: String,
-    val email: String,
-    val fName: String?,
-    val lName: String?,
-    val phoneNumber: String?,
-    val gender: String?,
-    val dob: String?,
-    val address: String?,
-    val roles: Set<String>,
+    val role: String,
     val accountCreationDate: String
 )
 
@@ -64,3 +56,9 @@ data class SignupRequest(
     val bloodGroup: String? = null,
     val allergies: List<String>? = null
 )
+enum class UserRole {
+    PATIENT,
+    DOCTOR;
+
+    override fun toString(): String = name
+}

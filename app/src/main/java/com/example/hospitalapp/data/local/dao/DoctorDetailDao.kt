@@ -9,9 +9,6 @@ interface DoctorDetailDao {
     @Query("SELECT * FROM doctor_details WHERE userId = :userId")
     suspend fun getDoctorDetailByUserId(userId: Long): DoctorDetailEntity?
 
-    @Query("SELECT * FROM doctor_details WHERE id = :id")
-    suspend fun getDoctorDetailById(id: Long): DoctorDetailEntity?
-
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertDoctorDetail(doctorDetail: DoctorDetailEntity): Long
 
@@ -23,4 +20,11 @@ interface DoctorDetailDao {
 
     @Query("SELECT * FROM doctor_details WHERE specialization = :specialization")
     suspend fun getDoctorsBySpecialization(specialization: String): List<DoctorDetailEntity>
+
+    @Query("""
+        SELECT d.* FROM doctor_details d 
+        INNER JOIN users u ON d.userId = u.id 
+        WHERE u.accountCreationDate >= :startDate
+    """)
+    suspend fun getNewDoctors(startDate: String): List<DoctorDetailEntity>
 }
