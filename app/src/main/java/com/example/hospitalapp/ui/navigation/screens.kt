@@ -17,10 +17,9 @@ data class VitalsDetailNav(
 data class MedicationDetailNav(
     val patientId: Long
 )
-
 @Serializable
 data class AppointmentDetailNav(
-    val patientId: Long
+    val appointmentId: Long
 )
 
 @Serializable
@@ -30,7 +29,8 @@ data class HealthReportNav(
 
 @Serializable
 data class AppointmentBookingScreenNav(
-    val patientId: Long
+    val patientId: Long,
+    val doctorId: Long
 )
 
 @Serializable
@@ -38,7 +38,8 @@ object DoctorDashboardNav
 
 @Serializable
 data class DoctorPatientDetailNav(
-    val patientId: Long
+    val patientId: Long,
+    val doctorId: Long
 )
 
 @Serializable

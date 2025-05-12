@@ -3,33 +3,21 @@ package com.example.hospitalapp.ui.navigation
 import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.*
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.example.hospitalapp.data.datastore.UserPreferences
-import com.example.hospitalapp.ui.screens.doctor.DoctorDashboardStateScreen
-import com.example.hospitalapp.ui.screens.doctor.DoctorInfoScreen
-import com.example.hospitalapp.ui.screens.doctor.detail.DoctorAppointmentDetailScreen
-import com.example.hospitalapp.ui.screens.doctor.detail.PatientDetailScreen
-import com.example.hospitalapp.ui.screens.patient.AppointmentBookingScreen
-import com.example.hospitalapp.ui.screens.patient.PatientDashboardStateScreen
-import com.example.hospitalapp.ui.screens.patient.PatientInfoScreen
-import com.example.hospitalapp.ui.screens.patient.detail.AppointmentDetailScreen
-import com.example.hospitalapp.ui.screens.patient.detail.HealthReportScreen
-import com.example.hospitalapp.ui.screens.patient.detail.MedicationDetailScreen
-import com.example.hospitalapp.ui.screens.patient.detail.VitalsDetailScreen
-import com.example.hospitalapp.ui.signin.LoginScreen
-import com.example.hospitalapp.ui.signin.SignupScreen
-import com.example.hospitalapp.ui.viewModels.AppointmentViewModel
-import com.example.hospitalapp.ui.viewModels.DoctorViewModel
-import com.example.hospitalapp.ui.viewModels.MedicationViewModel
-import com.example.hospitalapp.ui.viewModels.PatientViewModel
-import com.example.hospitalapp.ui.viewModels.UserViewModel
-import com.example.hospitalapp.ui.viewModels.VitalsViewModel
-
+import com.example.hospitalapp.ui.screens.doctor.*
+import com.example.hospitalapp.ui.screens.doctor.detail.*
+import com.example.hospitalapp.ui.screens.patient.*
+import com.example.hospitalapp.ui.screens.patient.detail.*
+import com.example.hospitalapp.ui.signin.*
+import com.example.hospitalapp.ui.viewModels.*
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
@@ -44,46 +32,57 @@ fun AppNavigation(
 ) {
     val navController = rememberNavController()
     var userInfo by remember { mutableStateOf<UserPreferences.UserInfo?>(null) }
-    val currentUser by userViewModel.currentUser.collectAsState()
+    val currentUserState by userViewModel.currentUser.collectAsState()
 
     LaunchedEffect(Unit) {
         userInfo = userPreferences.getUser()
     }
+
     NavHost(
         navController = navController,
-        startDestination = if (userInfo != null) PatientDashboardNav else LoginScreenNav
+        startDestination = if (userInfo != null) {
+            when (userInfo?.role) {
+                "PATIENT" -> PatientDashboardNav.toString()
+                "DOCTOR" -> DoctorDashboardNav.toString()
+                else -> LoginScreenNav.toString()
+            }
+        } else LoginScreenNav.toString()
     ) {
         // Auth screens
-        composable<LoginScreenNav> {
+        composable(toString()) {
             LoginScreen(
                 userViewModel = userViewModel,
                 onLoginSuccess = { role ->
                     when (role) {
-                        "PATIENT" -> navController.navigate(PatientDashboardNav)
-                        "DOCTOR" -> navController.navigate(DoctorDashboardNav)
+                        "PATIENT" -> navController.navigate(toString()) {
+                            popUpTo(toString()) { inclusive = true }
+                        }
+                        "DOCTOR" -> navController.navigate(toString()) {
+                            popUpTo(toString()) { inclusive = true }
+                        }
                         else -> Log.e("Navigation", "Unknown role: $role")
                     }
                 },
                 onSignUpClick = {
-                    navController.navigate(SignupScreenNav)
+                    navController.navigate(toString())
                 }
             )
         }
 
-        composable<SignupScreenNav> {
+        composable(toString()) {
             SignupScreen(
                 userViewModel = userViewModel,
                 onBackClick = { navController.navigateUp() },
                 onSignUpSuccess = { role, userId ->
                     when (role) {
                         "PATIENT" -> {
-                            navController.navigate(PatientInfoNav(patientId = userId)) {
-                                popUpTo(LoginScreenNav) { inclusive = true }
+                            navController.navigate("patient_info/$userId") {
+                                popUpTo(toString()) { inclusive = true }
                             }
                         }
                         "DOCTOR" -> {
-                            navController.navigate(DoctorInfoNav(doctorId = userId)) {
-                                popUpTo(LoginScreenNav) { inclusive = true }
+                            navController.navigate("doctor_info/$userId") {
+                                popUpTo(toString()) { inclusive = true }
                             }
                         }
                         else -> Log.e("Navigation", "Unknown role: $role")
@@ -92,105 +91,106 @@ fun AppNavigation(
             )
         }
 
-        // Add the new info screen routes
-        composable<DoctorInfoNav> { backStackEntry ->
+        // Info Screens
+        composable(toString()) { backStackEntry ->
             val args = backStackEntry.toRoute<DoctorInfoNav>()
             DoctorInfoScreen(
                 viewModel = doctorViewModel,
                 doctorId = args.doctorId,
                 onProfileUpdated = {
-                    navController.navigate(DoctorDashboardNav) {
-                        popUpTo(DoctorInfoNav) { inclusive = true }
+                    navController.navigate(toString()) {
+                        popUpTo(toString()) { inclusive = true }
                     }
-                }
+                },
+                navController = navController
             )
         }
 
-        composable<PatientInfoNav> { backStackEntry ->
+        composable(toString()) { backStackEntry ->
             val args = backStackEntry.toRoute<PatientInfoNav>()
             PatientInfoScreen(
                 viewModel = patientViewModel,
                 patientId = args.patientId,
                 onProfileUpdated = {
-                    navController.navigate(PatientDashboardNav) {
-                        popUpTo(PatientInfoNav) { inclusive = true }
+                    navController.navigate(toString()) {
+                        popUpTo(toString()) { inclusive = true }
                     }
                 }
             )
         }
 
-        // Patient Dashboard
-        composable<PatientDashboardNav> {
-            val userId = currentUser?.id ?: return@composable
-            PatientDashboardStateScreen(
+        // Patient Routes
+        composable(toString()) {
+            val userId = currentUserState?.id ?: return@composable
+            PatientDashboardScreen(
                 patientId = userId,
                 navController = navController,
+                patientViewModel = patientViewModel,
                 vitalsViewModel = vitalsViewModel,
                 medicationViewModel = medicationViewModel,
-                appointmentViewModel = appointmentViewModel,
-                patientViewModel = patientViewModel
+                appointmentViewModel = appointmentViewModel
             )
         }
 
-        // Detail Screens
-        composable<VitalsDetailNav> {
-            val args = it.toRoute<VitalsDetailNav>()
+        composable(toString()) { backStackEntry ->
+            val args = backStackEntry.toRoute<VitalsDetailNav>()
             VitalsDetailScreen(
                 patientId = args.patientId,
                 vitalsViewModel = vitalsViewModel,
-                navController = navController
+                navController = navController,
             )
         }
 
-        composable<MedicationDetailNav> {
-            val args = it.toRoute<MedicationDetailNav>()
+        composable(toString()) { backStackEntry ->
+            val args = backStackEntry.toRoute<MedicationDetailNav>()
             MedicationDetailScreen(
                 patientId = args.patientId,
                 medicationViewModel = medicationViewModel,
-                navController = navController
+                navController = navController,
             )
         }
 
-        composable<AppointmentDetailNav> {
-            val args = it.toRoute<AppointmentDetailNav>()
+        composable(toString()) { backStackEntry ->
+            val args = backStackEntry.toRoute<AppointmentDetailNav>()
             AppointmentDetailScreen(
-                patientId = args.patientId,
+                appointmentId = args.appointmentId, // This should be appointmentId, need to update the nav class
                 appointmentViewModel = appointmentViewModel,
-                navController = navController
+                navController = navController,
             )
         }
 
-        composable<AppointmentBookingScreenNav> { backStackEntry ->
+        composable(toString()) { backStackEntry ->
             val args = backStackEntry.toRoute<AppointmentBookingScreenNav>()
             AppointmentBookingScreen(
                 patientId = args.patientId,
                 appointmentViewModel = appointmentViewModel,
-                navController = navController
+                navController = navController,
+                doctorId = args.doctorId
             )
         }
 
-        composable<HealthReportNav> {
-            val args = it.toRoute<HealthReportNav>()
+        composable(toString()) { backStackEntry ->
+            val args = backStackEntry.toRoute<HealthReportNav>()
             HealthReportScreen(
                 patientId = args.patientId,
                 vitalsViewModel = vitalsViewModel,
                 medicationViewModel = medicationViewModel,
                 appointmentViewModel = appointmentViewModel,
-                navController = navController
-            )
-        }
-        // Doctor Dashboard and its routes
-        composable<DoctorDashboardNav> {
-            val userId = currentUser?.id ?: return@composable
-            DoctorDashboardStateScreen(
-                doctorId = userId,
                 navController = navController,
-                doctorViewModel = doctorViewModel,
-                appointmentViewModel = appointmentViewModel
             )
         }
 
-        composable<DoctorPatientDetailNav> { backStackEntry ->
+        // Doctor Routes
+        composable(toString()) {
+            val userId = currentUserState?.id ?: return@composable
+            DoctorDashboardScreen(
+                doctorId = userId,
+                navController = navController,
+                doctorViewModel = doctorViewModel,
+            )
+        }
+
+        composable(toString()) { backStackEntry ->
             val args = backStackEntry.toRoute<DoctorPatientDetailNav>()
             PatientDetailScreen(
                 patientId = args.patientId,
@@ -198,26 +198,28 @@ fun AppNavigation(
                 vitalsViewModel = vitalsViewModel,
                 medicationViewModel = medicationViewModel,
                 appointmentViewModel = appointmentViewModel,
-                navController = navController
+                navController = navController,
+                doctorId = args.doctorId
             )
         }
 
-        composable<DoctorAppointmentDetailNav> { backStackEntry ->
+        composable(toString()) { backStackEntry ->
             val args = backStackEntry.toRoute<DoctorAppointmentDetailNav>()
             DoctorAppointmentDetailScreen(
                 appointmentId = args.appointmentId,
                 doctorId = args.doctorId,
-                appointmentViewModel = appointmentViewModel,
-                navController = navController
+                viewModel = appointmentViewModel,
+                navController = navController,
             )
         }
 
-        composable<DoctorAppointmentBookingNav> { backStackEntry ->
+        composable(toString()) { backStackEntry ->
             val args = backStackEntry.toRoute<DoctorAppointmentBookingNav>()
             AppointmentBookingScreen(
                 patientId = args.patientId,
                 appointmentViewModel = appointmentViewModel,
                 navController = navController,
+                doctorId = args.doctorId
             )
         }
     }

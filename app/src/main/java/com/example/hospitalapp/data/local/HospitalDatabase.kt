@@ -7,36 +7,40 @@ import androidx.room.RoomDatabase
 import com.example.hospitalapp.data.local.dao.*
 import com.example.hospitalapp.data.local.entities.*
 
+
 @Database(
     entities = [
         UserEntity::class,
-        VitalsEntity::class,
+        PatientDetailEntity::class,
+        DoctorDetailEntity::class,
         AppointmentEntity::class,
         MedicationEntity::class,
+        VitalsEntity::class,
+        ReportEntity::class,
         FeedbackEntity::class
     ],
-    version = 1,
-    exportSchema = false
+    version = 1
 )
 abstract class HospitalDatabase : RoomDatabase() {
     abstract fun userDao(): UserDao
-    abstract fun vitalsDao(): VitalsDao
+    abstract fun patientDetailDao(): PatientDetailDao
+    abstract fun doctorDetailDao(): DoctorDetailDao
     abstract fun appointmentDao(): AppointmentDao
     abstract fun medicationDao(): MedicationDao
+    abstract fun vitalsDao(): VitalsDao
+    abstract fun reportDao(): ReportDao
     abstract fun feedbackDao(): FeedbackDao
 
     companion object {
-        @Volatile
         private var Instance: HospitalDatabase? = null
 
         fun getDatabase(context: Context): HospitalDatabase {
             return Instance ?: synchronized(this) {
                 Room.databaseBuilder(
-                    context,
+                    context.applicationContext,
                     HospitalDatabase::class.java,
                     "hospital_database"
                 )
-                    .createFromAsset("database/initial_data.db") // Optional: for seeding initial data
                     .build()
                     .also { Instance = it }
             }

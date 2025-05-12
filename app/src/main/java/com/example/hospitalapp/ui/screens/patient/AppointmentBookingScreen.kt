@@ -24,6 +24,7 @@ import java.time.format.DateTimeFormatter
 @Composable
 fun AppointmentBookingScreen(
     patientId: Long,
+    doctorId:Long,
     appointmentViewModel: AppointmentViewModel,
     navController: NavController,
     modifier: Modifier = Modifier
@@ -142,9 +143,9 @@ fun AppointmentBookingScreen(
                         isBooking = true
                         val appointment = AppointmentRequest(
                             patientId = patientId,
-                            doctorId = 1L, // Default doctor for now
+                            doctorId = doctorId, // Default doctor for now
                             scheduledTime = selectedDate.format(DateTimeFormatter.ISO_DATE_TIME),
-                            type = appointmentType,
+                            type = appointmentType.toString(),
                             reason = reason
                         )
                         appointmentViewModel.createAppointment(appointment)

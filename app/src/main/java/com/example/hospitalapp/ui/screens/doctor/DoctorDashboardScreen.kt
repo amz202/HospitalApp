@@ -109,7 +109,7 @@ fun DoctorDashboardScreen(
                         1 -> PatientsTab(
                             patientsState = patientsState,
                             onPatientClick = { patientId ->
-                                navController.navigate(DoctorPatientDetailNav(patientId))
+                                navController.navigate(DoctorPatientDetailNav(patientId, doctorId ))
                             }
                         )
                         2 -> AppointmentsTab(

@@ -17,14 +17,14 @@ interface ReportDao {
     @Query("""
         SELECT * FROM reports 
         WHERE patientId = :patientId 
-        AND (timePeriodStart BETWEEN :startDate AND :endDate 
-        OR timePeriodEnd BETWEEN :startDate AND :endDate)
+        AND (:startDate IS NULL OR timePeriodEnd >= :startDate)
+        AND (:endDate IS NULL OR timePeriodStart <= :endDate)
         ORDER BY generatedAt DESC
     """)
     suspend fun getReportsByPatientBetweenDates(
         patientId: Long,
-        startDate: String,
-        endDate: String
+        startDate: String?,
+        endDate: String?
     ): List<ReportEntity>
 
     @Query("SELECT * FROM reports WHERE appointmentId = :appointmentId")
@@ -42,20 +42,6 @@ interface ReportDao {
     @Query("SELECT * FROM reports WHERE doctorId = :doctorId ORDER BY generatedAt DESC")
     suspend fun getReportsByDoctor(doctorId: Long): List<ReportEntity>
 
-    @Query("""
-        SELECT * FROM reports 
-        WHERE patientId = :patientId 
-        AND (:startDate IS NULL OR timePeriodEnd >= :startDate)
-        AND (:endDate IS NULL OR timePeriodStart <= :endDate)
-        ORDER BY generatedAt DESC
-    """)
-    suspend fun getReportsByPatientBetweenDates(
-        patientId: Long,
-        startDate: String?,
-        endDate: String?
-    ): List<ReportEntity>
-
     @Query("SELECT * FROM reports WHERE appointmentId = :appointmentId")
     suspend fun getReportsByAppointment(appointmentId: Long): List<ReportEntity>
-
 }

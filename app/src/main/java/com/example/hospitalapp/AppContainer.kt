@@ -11,6 +11,6 @@ class HospitalApplication : Application() {
     override fun onCreate() {
         super.onCreate()
         userPreferences = UserPreferences(this)
-        container = DefaultAppContainer()
+        container = DefaultAppContainer(this)
     }
 }
