@@ -2,6 +2,7 @@ package com.example.hospitalapp.data.local.entities
 
 import androidx.room.Entity
 import androidx.room.ForeignKey
+import androidx.room.Index
 import androidx.room.PrimaryKey
 
 @Entity(
@@ -37,6 +38,13 @@ import androidx.room.PrimaryKey
             childColumns = ["feedbackId"],
             onDelete = ForeignKey.SET_NULL
         )
+    ],
+    indices = [
+        Index("patientId"),
+        Index("doctorId"),
+        Index("appointmentId"),
+        Index("vitalsId"),
+        Index("feedbackId")
     ]
 )
 data class ReportEntity(

@@ -4,9 +4,10 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.room.TypeConverters
+import com.example.hospitalapp.data.local.converters.Converters
 import com.example.hospitalapp.data.local.dao.*
 import com.example.hospitalapp.data.local.entities.*
-
 
 @Database(
     entities = [
@@ -19,8 +20,10 @@ import com.example.hospitalapp.data.local.entities.*
         ReportEntity::class,
         FeedbackEntity::class
     ],
-    version = 1
+    version = 1,
+    exportSchema = false
 )
+@TypeConverters(Converters::class)
 abstract class HospitalDatabase : RoomDatabase() {
     abstract fun userDao(): UserDao
     abstract fun patientDetailDao(): PatientDetailDao

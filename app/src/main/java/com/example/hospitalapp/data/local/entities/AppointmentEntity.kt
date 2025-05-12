@@ -2,6 +2,7 @@ package com.example.hospitalapp.data.local.entities
 
 import androidx.room.Entity
 import androidx.room.ForeignKey
+import androidx.room.Index
 
 @Entity(
     tableName = "appointments",
@@ -19,7 +20,11 @@ import androidx.room.ForeignKey
             onDelete = ForeignKey.CASCADE
         )
     ],
-    primaryKeys = ["id"]
+    primaryKeys = ["id"],
+    indices = [
+        Index("patientId"),
+        Index("doctorId")
+    ]
 )
 data class AppointmentEntity(
     val id: Long = 0,
