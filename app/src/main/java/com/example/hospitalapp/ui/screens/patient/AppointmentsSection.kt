@@ -2,7 +2,10 @@ package com.example.hospitalapp.ui.screens.patient
 
 import android.os.Build
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Error
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -29,17 +32,9 @@ fun AppointmentsSection(
     modifier: Modifier = Modifier
 ) {
     val appointmentsState = appointmentViewModel.appointmentsUiState
-    val currentDateTime = LocalDateTime.now()
 
-    LaunchedEffect(patientId) {
-        appointmentViewModel.getPatientAppointments(patientId)
-    }
-
-    Card(
-        modifier = modifier.fillMaxWidth(),
-        onClick = {
-            navController.navigate(AppointmentDetailNav(patientId = patientId))
-        }
+    ElevatedCard(
+        modifier = modifier.fillMaxWidth()
     ) {
         Column(
             modifier = Modifier
@@ -53,185 +48,119 @@ fun AppointmentsSection(
             ) {
                 Text(
                     text = "Appointments",
-                    style = MaterialTheme.typography.titleLarge
+                    style = MaterialTheme.typography.titleMedium
                 )
                 TextButton(
                     onClick = {
-                        navController.navigate(AppointmentDetailNav(patientId = patientId))
-                    }
-                ) {
-                    Text("View All")
-                }
-                TextButton(
-                    onClick = {
-                        navController.navigate(
-                            AppointmentBookingScreenNav(patientId = patientId)
-                        )
+                        // Navigate to book appointment
+                        navController.navigate("book_appointment/$patientId")
                     }
                 ) {
                     Text("Book New")
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
-
             when (appointmentsState) {
                 is BaseUiState.Loading -> {
                     CircularProgressIndicator(
-                        modifier = Modifier.align(Alignment.CenterHorizontally)
+                        modifier = Modifier
+                            .align(Alignment.CenterHorizontally)
+                            .padding(16.dp)
                     )
                 }
                 is BaseUiState.Success -> {
-                    val appointments = appointmentsState.data
-                    if (appointments.isEmpty()) {
+                    if (appointmentsState.data.isEmpty()) {
                         Text(
                             text = "No appointments scheduled",
-                            style = MaterialTheme.typography.bodyMedium
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(vertical = 8.dp)
                         )
                     } else {
-                        val sortedAppointments = appointments.sortedBy { it.scheduledTime }
-                        val upcomingAppointments = sortedAppointments.filter {
-                            LocalDateTime.parse(it.scheduledTime, DateTimeFormatter.ISO_DATE_TIME) > currentDateTime
-                        }
-                        val recentAppointments = sortedAppointments.filter {
-                            LocalDateTime.parse(it.scheduledTime, DateTimeFormatter.ISO_DATE_TIME) <= currentDateTime
-                        }
-
-                        if (upcomingAppointments.isNotEmpty()) {
-                            Text(
-                                text = "Upcoming",
-                                style = MaterialTheme.typography.titleMedium
-                            )
-                            Spacer(modifier = Modifier.height(8.dp))
-                            upcomingAppointments.take(2).forEach { appointment ->
-                                AppointmentItem(appointment)
-                                Spacer(modifier = Modifier.height(8.dp))
+                        Spacer(modifier = Modifier.height(8.dp))
+                        appointmentsState.data
+                            .sortedBy { it.scheduledTime }
+                            .forEach { appointment ->
+                                val appointmentDateTime = LocalDateTime.parse(appointment.scheduledTime)
+                                ListItem(
+                                    headlineContent = {
+                                        Text(
+                                            text = "Dr. ${appointment.doctor.fName} ${appointment.doctor.lName}",
+                                            style = MaterialTheme.typography.titleSmall
+                                        )
+                                    },
+                                    supportingContent = {
+                                        Column {
+                                            Text(
+                                                text = appointmentDateTime.format(
+                                                    DateTimeFormatter.ofPattern("YYYY-MM-dd HH:mm:ss")
+                                                ),
+                                                style = MaterialTheme.typography.bodyMedium
+                                            )
+                                            Text(
+                                                text = when (appointment.type.uppercase()) {
+                                                    "IN_PERSON" -> "In-Person"
+                                                    "VIDEO_CONSULTATION" -> "Video Call"
+                                                    else -> appointment.type
+                                                },
+                                                style = MaterialTheme.typography.bodySmall,
+                                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                                            )
+                                            if (!appointment.reason.isNullOrBlank()) {
+                                                Text(
+                                                    text = "Reason: ${appointment.reason}",
+                                                    style = MaterialTheme.typography.bodySmall,
+                                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                                )
+                                            }
+                                        }
+                                    },
+                                    trailingContent = {
+                                        AssistChip(
+                                            onClick = { },
+                                            label = { Text(appointment.status.name) },
+                                            colors = AssistChipDefaults.assistChipColors(
+                                                containerColor = when (appointment.status) {
+                                                    AppointmentStatus.COMPLETED -> MaterialTheme.colorScheme.primaryContainer
+                                                    AppointmentStatus.CONFIRMED -> MaterialTheme.colorScheme.secondaryContainer
+                                                    AppointmentStatus.PENDING -> MaterialTheme.colorScheme.tertiaryContainer
+                                                    AppointmentStatus.CANCELLED -> MaterialTheme.colorScheme.errorContainer
+                                                }
+                                            )
+                                        )
+                                    },
+                                    modifier = Modifier.clickable {
+                                        navController.navigate("appointment_detail/${appointment.id}")
+                                    }
+                                )
+                                Divider(modifier = Modifier.padding(vertical = 8.dp))
                             }
-                        }
-
-                        if (recentAppointments.isNotEmpty()) {
-                            if (upcomingAppointments.isNotEmpty()) {
-                                Spacer(modifier = Modifier.height(8.dp))
-                            }
-                            Text(
-                                text = "Recent",
-                                style = MaterialTheme.typography.titleMedium
-                            )
-                            Spacer(modifier = Modifier.height(8.dp))
-                            recentAppointments.take(1).forEach { appointment ->
-                                AppointmentItem(appointment)
-                                Spacer(modifier = Modifier.height(8.dp))
-                            }
-                        }
                     }
                 }
                 is BaseUiState.Error -> {
-                    Text(
-                        text = "Error loading appointments",
-                        color = MaterialTheme.colorScheme.error
-                    )
-                }
-                else -> Unit
-            }
-        }
-    }
-}
-
-@RequiresApi(Build.VERSION_CODES.O)
-@Composable
-private fun AppointmentItem(
-    appointment: AppointmentResponse,
-    modifier: Modifier = Modifier
-) {
-    Card(
-        modifier = modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant
-        )
-    ) {
-        Column(
-            modifier = Modifier
-                .padding(12.dp)
-                .fillMaxWidth()
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.Top
-            ) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = LocalDateTime.parse(appointment.scheduledTime)
-                            .format(DateTimeFormatter.ofPattern("MMM dd, yyyy HH:mm")),
-                        style = MaterialTheme.typography.titleMedium
-                    )
-                    Text(
-                        text = "Dr. ${appointment.doctor.fName} ${appointment.doctor.lName}",
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-                    Text(
-                        text = appointment.doctor.specialization,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-
-                Column(
-                    horizontalAlignment = Alignment.End
-                ) {
-                    val (statusColor, statusText) = when (appointment.status) {
-                        AppointmentStatus.REQUESTED -> Pair(MaterialTheme.colorScheme.tertiary, "Pending")
-                        AppointmentStatus.APPROVED -> Pair(MaterialTheme.colorScheme.primary, "Confirmed")
-                        AppointmentStatus.COMPLETED -> Pair(MaterialTheme.colorScheme.secondary, "Completed")
-                        AppointmentStatus.CANCELLED -> Pair(MaterialTheme.colorScheme.error, "Cancelled")
-                        AppointmentStatus.DECLINED -> Pair(MaterialTheme.colorScheme.error, "Declined")
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Error,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.error
+                        )
+                        Text(
+                            text = "Error loading appointments",
+                            color = MaterialTheme.colorScheme.error
+                        )
+                        TextButton(
+                            onClick = {
+                                appointmentViewModel.getPatientAppointments(patientId)
+                            }
+                        ) {
+                            Text("Retry")
+                        }
                     }
-
-                    Text(
-                        text = statusText,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = statusColor
-                    )
-
-                    Text(
-                        text = when (appointment.type) {
-                            AppointmentType.IN_PERSON -> "In-Person"
-                            AppointmentType.VIDEO_CONSULTATION -> "Video Call"
-                        },
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
                 }
-            }
-
-            if (!appointment.reason.isNullOrBlank()) {
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = appointment.reason,
-                    style = MaterialTheme.typography.bodySmall,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
-                )
-            }
-
-            if (!appointment.notes.isNullOrBlank()) {
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = appointment.notes,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-            }
-
-            if (appointment.type == AppointmentType.VIDEO_CONSULTATION && appointment.meetingLink != null) {
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = "Video link available",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.primary
-                )
             }
         }
     }

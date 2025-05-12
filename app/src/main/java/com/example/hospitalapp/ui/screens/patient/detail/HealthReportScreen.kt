@@ -351,11 +351,13 @@ private fun AppointmentsReportCard(appointments: List<AppointmentResponse>) {
                     )
                 }
                 Text(
-                    text = when (appointment.type) {
-                        AppointmentType.IN_PERSON -> "In-Person"
-                        AppointmentType.VIDEO_CONSULTATION -> "Video"
+                    text = when (appointment.type.uppercase()) {
+                        "IN_PERSON" -> "In-Person"
+                        "VIDEO_CONSULTATION" -> "Video"
+                        else -> appointment.type // fallback to the raw type string
                     },
-                    style = MaterialTheme.typography.bodySmall
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }
