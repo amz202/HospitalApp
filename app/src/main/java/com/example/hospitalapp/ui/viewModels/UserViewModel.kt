@@ -15,6 +15,7 @@ import com.example.hospitalapp.data.datastore.UserPreferences
 import com.example.hospitalapp.data.repositories.UserRepository
 import com.example.hospitalapp.network.model.CreateUserRequest
 import com.example.hospitalapp.network.model.LoginResponse
+import com.example.hospitalapp.network.model.SignupRequest
 import com.example.hospitalapp.network.model.UserResponse
 import com.google.firebase.crashlytics.buildtools.reloc.org.apache.http.HttpException
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -53,7 +54,7 @@ class UserViewModel(
         }
     }
 
-    fun createUser(request: CreateUserRequest) {
+    fun createUser(request: SignupRequest) {
         viewModelScope.launch {
             try {
                 Log.d(TAG, "Creating user: ${request.username}")
@@ -71,12 +72,14 @@ class UserViewModel(
                 }
 
                 val result = userRepository.createUser(request)
-                Log.d(TAG, "User created successfully: ${result.id}")
+                Log.d(TAG, "User created successfully: ${result.body()?.id}")
 
-                _currentUser.value = result
-                userPreferences.saveUser(result)
-                userPreferences.saveUserId(result.id)
-                createUserUiState = BaseUiState.Success(result)
+                result.body()?.let { userResponse ->
+                    _currentUser.value = userResponse
+                    userPreferences.saveUser(userResponse)
+                    userPreferences.saveUserId(userResponse.id)
+                    createUserUiState = BaseUiState.Success(userResponse)
+                } ?: throw Exception("Empty response body")
 
             } catch (e: Exception) {
                 Log.e(TAG, "Error creating user", e)

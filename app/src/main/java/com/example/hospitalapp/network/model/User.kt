@@ -52,5 +52,11 @@ data class SignupRequest(
     val username: String,
     val password: String,
     val email: String,
+    val fName: String,
+    val lName: String,
+    val phoneNumber: String? = null,
+    val gender: String,  // Should be "MALE", "FEMALE", or "OTHER"
+    val dob: String,     // Date format YYYY-MM-DD
+    val address: String,
     val roles: Set<String> = setOf("PATIENT")
 )

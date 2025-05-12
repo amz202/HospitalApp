@@ -31,13 +31,10 @@ interface ApiService {
     @DELETE("api/admins/users/{id}")
     suspend fun deleteUser(@Path("id") id: Long)
 
-    @POST("api/users")
-    suspend fun createUser(@Body request: CreateUserRequest): UserResponse
-
     @POST("api/users/login")
     suspend fun login(@Body request: LoginRequest): LoginResponse
 
-    @POST("api/auth/register")
+    @POST("api/users/signup")
     suspend fun register(@Body request: SignupRequest): Response<UserResponse>
 
     @GET("api/patients/{id}")

@@ -15,6 +15,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import com.example.hospitalapp.network.model.CreateUserRequest
 import com.example.hospitalapp.network.model.Gender
+import com.example.hospitalapp.network.model.SignupRequest
 import com.example.hospitalapp.ui.viewModels.BaseUiState
 import com.example.hospitalapp.ui.viewModels.UserViewModel
 import java.time.LocalDateTime
@@ -201,17 +202,16 @@ fun SignupScreen(
             Button(
                 onClick = {
 
-                    val request = CreateUserRequest(
+                    val request = SignupRequest(
                         username = username,
                         password = password,
                         email = email,
                         fName = firstName,
                         lName = lastName,
                         phoneNumber = phoneNumber.takeIf { it.isNotBlank() },
-                        gender = Gender.OTHER,
+                        gender = Gender.OTHER.toString(),
                         dob = "01-02-2025", // Default value
                         address = "Not specified", // Default value
-                        role = selectedRole
                     )
                     userViewModel.createUser(request)
                 },
