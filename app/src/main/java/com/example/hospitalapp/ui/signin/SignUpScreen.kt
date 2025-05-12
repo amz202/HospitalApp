@@ -24,24 +24,106 @@ import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import kotlin.text.format
 
-@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SignupScreen(
+fun SignUpScreen(
     userViewModel: UserViewModel,
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
-    onSignUpSuccess: (role: String, userId: Long) -> Unit,  // Modified to include role and userId
+    onSignUpSuccess: (role: String, userId: Long) -> Unit,
+) {
+    var selectedRole by remember { mutableStateOf<String?>(null) }
+    var showRoleSelection by remember { mutableStateOf(true) }
 
+    if (showRoleSelection) {
+        RoleSelectionContent(
+            onRoleSelected = { role ->
+                selectedRole = role
+                showRoleSelection = false
+            },
+            onBackClick = onBackClick
+        )
+    } else {
+        RegistrationContent(
+            role = selectedRole!!,
+            userViewModel = userViewModel,
+            onBackClick = { showRoleSelection = true },
+            onSignUpSuccess = onSignUpSuccess
+        )
+    }
+}
+
+@Composable
+private fun RoleSelectionContent(
+    onRoleSelected: (String) -> Unit,
+    onBackClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Select Your Role") },
+                navigationIcon = {
+                    IconButton(onClick = onBackClick) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back")
+                    }
+                }
+            )
+        }
+    ) { padding ->
+        Column(
+            modifier = modifier
+                .fillMaxSize()
+                .padding(padding)
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            ElevatedButton(
+                onClick = { onRoleSelected("PATIENT") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp)
+            ) {
+                Text("I'm a Patient")
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            ElevatedButton(
+                onClick = { onRoleSelected("DOCTOR") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp)
+            ) {
+                Text("I'm a Doctor")
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun RegistrationContent(
+    role: String,
+    userViewModel: UserViewModel,
+    onBackClick: () -> Unit,
+    onSignUpSuccess: (role: String, userId: Long) -> Unit,
 ) {
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
-    var firstName by remember { mutableStateOf("User") }
-    var lastName by remember { mutableStateOf("Name") }
+    var firstName by remember { mutableStateOf("") }
+    var lastName by remember { mutableStateOf("") }
     var phoneNumber by remember { mutableStateOf("") }
-    var selectedRole by remember { mutableStateOf("PATIENT") }
     var showError by remember { mutableStateOf(false) }
+
+    // Additional fields based on role
+    var specialization by remember { mutableStateOf("") }
+    var licenseNumber by remember { mutableStateOf("") }
+    var experience by remember { mutableStateOf("") }
+    var bloodGroup by remember { mutableStateOf("") }
+    var allergies by remember { mutableStateOf("") }
 
     val createUserState = userViewModel.createUserUiState
     val errorMessage = userViewModel.errorMessage
@@ -55,22 +137,17 @@ fun SignupScreen(
     }
 
     LaunchedEffect(currentUser) {
-        currentUser?.let { onSignUpSuccess(selectedRole, it.id) }
-    }
-
-    LaunchedEffect(createUserState) {
-        showError = createUserState is BaseUiState.Error
+        currentUser?.let { user ->
+            onSignUpSuccess(role, user.id)
+        }
     }
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Create Account") },
+                title = { Text(if (role == "DOCTOR") "Doctor Registration" else "Patient Registration") },
                 navigationIcon = {
-                    IconButton(
-                        onClick = onBackClick,
-                        enabled = createUserState !is BaseUiState.Loading
-                    ) {
+                    IconButton(onClick = onBackClick) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back")
                     }
                 }
@@ -78,187 +155,106 @@ fun SignupScreen(
         }
     ) { padding ->
         Column(
-            modifier = modifier
+            modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .padding(horizontal = 32.dp)
-                .verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+                .padding(16.dp)
+                .verticalScroll(rememberScrollState())
         ) {
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Role Selection
-            Text(
-                "I am a",
-                style = MaterialTheme.typography.titleMedium
-            )
-
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                listOf("PATIENT", "DOCTOR").forEach { role ->
-                    FilterChip(
-                        selected = selectedRole == role,
-                        onClick = { selectedRole = role },
-                        enabled = createUserState !is BaseUiState.Loading,
-                        label = { Text(role.capitalize()) }
-                    )
-                }
-            }
-
+            // Common fields
             OutlinedTextField(
                 value = username,
-                onValueChange = {
-                    username = it
-                    showError = false
-                },
+                onValueChange = { username = it },
                 label = { Text("Username") },
-                singleLine = true,
-                isError = showError,
-                enabled = createUserState !is BaseUiState.Loading,
                 modifier = Modifier.fillMaxWidth()
             )
+
+            Spacer(modifier = Modifier.height(8.dp))
 
             OutlinedTextField(
                 value = password,
-                onValueChange = {
-                    password = it
-                    showError = false
-                },
+                onValueChange = { password = it },
                 label = { Text("Password") },
                 visualTransformation = PasswordVisualTransformation(),
-                singleLine = true,
-                isError = showError,
-                enabled = createUserState !is BaseUiState.Loading,
                 modifier = Modifier.fillMaxWidth()
             )
 
-            OutlinedTextField(
-                value = email,
-                onValueChange = {
-                    email = it
-                    showError = false
-                },
-                label = { Text("Email") },
-                singleLine = true,
-                isError = showError,
-                enabled = createUserState !is BaseUiState.Loading,
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
+            // Role specific fields
+            if (role == "DOCTOR") {
+                Spacer(modifier = Modifier.height(8.dp))
                 OutlinedTextField(
-                    value = firstName,
-                    onValueChange = {
-                        firstName = it
-                        showError = false
-                    },
-                    label = { Text("First Name") },
-                    singleLine = true,
-                    isError = showError,
-                    enabled = createUserState !is BaseUiState.Loading,
-                    modifier = Modifier.weight(1f)
+                    value = specialization,
+                    onValueChange = { specialization = it },
+                    label = { Text("Specialization") },
+                    modifier = Modifier.fillMaxWidth()
                 )
 
+                Spacer(modifier = Modifier.height(8.dp))
                 OutlinedTextField(
-                    value = lastName,
-                    onValueChange = {
-                        lastName = it
-                        showError = false
-                    },
-                    label = { Text("Last Name") },
-                    singleLine = true,
-                    isError = showError,
-                    enabled = createUserState !is BaseUiState.Loading,
-                    modifier = Modifier.weight(1f)
+                    value = licenseNumber,
+                    onValueChange = { licenseNumber = it },
+                    label = { Text("License Number") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+                OutlinedTextField(
+                    value = experience,
+                    onValueChange = { experience = it },
+                    label = { Text("Years of Experience") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+            } else {
+                Spacer(modifier = Modifier.height(8.dp))
+                OutlinedTextField(
+                    value = bloodGroup,
+                    onValueChange = { bloodGroup = it },
+                    label = { Text("Blood Group") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+                OutlinedTextField(
+                    value = allergies,
+                    onValueChange = { allergies = it },
+                    label = { Text("Allergies (comma separated)") },
+                    modifier = Modifier.fillMaxWidth()
                 )
             }
 
-            OutlinedTextField(
-                value = phoneNumber,
-                onValueChange = {
-                    phoneNumber = it
-                    showError = false
-                },
-                label = { Text("Phone Number") },
-                singleLine = true,
-                isError = showError,
-                enabled = createUserState !is BaseUiState.Loading,
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            if (showError && errorMessage != null) {
+            if (errorMessage != null) {
                 Text(
                     text = errorMessage,
                     color = MaterialTheme.colorScheme.error,
-                    style = MaterialTheme.typography.bodySmall,
-                    modifier = Modifier.padding(top = 8.dp)
+                    modifier = Modifier.padding(vertical = 8.dp)
                 )
             }
 
-
             Button(
                 onClick = {
-
-                    val request = SignupRequest(
+                    val signupRequest = SignupRequest(
                         username = username,
                         password = password,
                         email = email,
                         fName = firstName,
                         lName = lastName,
-                        phoneNumber = phoneNumber.takeIf { it.isNotBlank() },
-                        gender = Gender.OTHER.toString(),
-                        dob = "2025-02-01", // Default value
-                        address = "Not specified", // Default value
-                        roles = setOf(selectedRole.trim().uppercase())
+                        phoneNumber = phoneNumber,
+                        role = role,
+                        // Add role-specific fields
+                        specialization = if (role == "DOCTOR") specialization else null,
+                        licenseNumber = if (role == "DOCTOR") licenseNumber else null,
+                        experienceYears = if (role == "DOCTOR") experience.toIntOrNull() ?: 0 else null,
+                        bloodGroup = if (role == "PATIENT") bloodGroup else null,
+                        allergies = if (role == "PATIENT") allergies.split(",").map { it.trim() } else null
                     )
-                    userViewModel.createUser(request)
-                    Log.d("SignUpScreen", "Sending signup request: $request")
+                    userViewModel.createUser(signupRequest)
                 },
-                enabled = username.isNotBlank() && password.isNotBlank() &&
-                        email.isNotBlank() && firstName.isNotBlank() &&
-                        lastName.isNotBlank() && createUserState !is BaseUiState.Loading,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 16.dp)
             ) {
-                if (createUserState is BaseUiState.Loading) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(24.dp),
-                        color = MaterialTheme.colorScheme.onPrimary
-                    )
-                } else {
-                    Text("Create Account")
-                }
+                Text("Register")
             }
-            if (createUserState is BaseUiState.Error) {
-                Text(
-                    text = "Error: ${createUserState}",
-                    color = MaterialTheme.colorScheme.error,
-                    style = MaterialTheme.typography.bodySmall
-                )
-            }
-            Spacer(modifier = Modifier.height(32.dp))
         }
     }
-}
-
-private fun String.capitalize(): String {
-    return this.lowercase().replaceFirstChar { it.uppercase() }
-}
-private fun areFieldsValid(
-    username: String,
-    password: String,
-    email: String,
-    firstName: String,
-    lastName: String
-): Boolean {
-    return username.isNotBlank() &&
-            password.isNotBlank() &&
-            email.isNotBlank() &&
-            firstName.isNotBlank() &&
-            lastName.isNotBlank() &&
-            android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches() &&
-            password.length >= 6
 }

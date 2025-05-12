@@ -72,7 +72,6 @@ class UserViewModel(
     fun createUser(request: SignupRequest) {
         viewModelScope.launch {
             try {
-                Log.d(TAG, "Creating user: ${request.username}")
                 createUserUiState = BaseUiState.Loading
                 errorMessage = null
 
@@ -81,9 +80,12 @@ class UserViewModel(
                 val result = userRepository.createUser(request)
                 Log.d(TAG, "User created successfully: ${result.id}")
 
-                _currentUser.value = result
+                // Save user data
                 userPreferences.saveUser(result)
                 userPreferences.saveUserId(result.id)
+
+                // Update UI state
+                _currentUser.value = result
                 createUserUiState = BaseUiState.Success(result)
 
             } catch (e: Exception) {
@@ -95,62 +97,28 @@ class UserViewModel(
 
     @RequiresApi(Build.VERSION_CODES.O)
     private fun validateSignupRequest(request: SignupRequest) {
-        // Username validation
-        if (request.username.isBlank()) {
-            throw IllegalArgumentException("Username cannot be empty")
-        }
-        if (request.username.length < 3) {
-            throw IllegalArgumentException("Username must be at least 3 characters")
-        }
 
-        // Email validation
-        if (!android.util.Patterns.EMAIL_ADDRESS.matcher(request.email).matches()) {
-            throw IllegalArgumentException("Invalid email format")
-        }
-
-        // Password validation
-        if (request.password.length < 6) {
-            throw IllegalArgumentException("Password must be at least 6 characters")
-        }
-
-        // Name validation
-        if (request.fName.isBlank() || request.lName.isBlank()) {
-            throw IllegalArgumentException("First and last name are required")
-        }
-
-        // Gender validation
-        if (!VALID_GENDERS.contains(request.gender.uppercase())) {
-            throw IllegalArgumentException("Gender must be one of: ${VALID_GENDERS.joinToString(", ")}")
-        }
-
-        // Date of birth validation
-        try {
-            val dob = java.time.LocalDate.parse(request.dob, DATE_FORMATTER)
-            val now = java.time.LocalDate.now()
-            if (dob.isAfter(now)) {
-                throw IllegalArgumentException("Date of birth cannot be in the future")
+        when (request.role) {
+            "DOCTOR" -> {
+                if (request.specialization.isNullOrBlank()) {
+                    throw IllegalArgumentException("Specialization is required for doctors")
+                }
+                if (request.licenseNumber.isNullOrBlank()) {
+                    throw IllegalArgumentException("License number is required for doctors")
+                }
+                if (request.experienceYears == null || request.experienceYears < 0) {
+                    throw IllegalArgumentException("Valid years of experience is required")
+                }
             }
-        } catch (e: java.time.format.DateTimeParseException) {
-            throw IllegalArgumentException("Invalid date format. Use YYYY-MM-DD")
-        }
-
-        // Address validation
-        if (request.address.isBlank()) {
-            throw IllegalArgumentException("Address is required")
-        }
-
-        // PhoneNumber validation (if provided)
-        request.phoneNumber?.let { phone ->
-            if (!phone.matches(Regex("^[+]?[0-9]{10,13}$"))) {
-                throw IllegalArgumentException("Invalid phone number format")
+            "PATIENT" -> {
+                if (request.bloodGroup.isNullOrBlank()) {
+                    throw IllegalArgumentException("Blood group is required for patients")
+                }
             }
-        }
-
-        // Roles validation
-        if (request.roles.isEmpty()) {
-            throw IllegalArgumentException("At least one role is required")
+            else -> throw IllegalArgumentException("Invalid role selected")
         }
     }
+
 
     private fun handleCreateUserError(e: Exception) {
         errorMessage = when (e) {
