@@ -19,6 +19,7 @@ import com.example.hospitalapp.network.model.CreateUserRequest
 import com.example.hospitalapp.network.model.LoginResponse
 import com.example.hospitalapp.network.model.SignupRequest
 import com.example.hospitalapp.network.model.UserResponse
+import com.example.hospitalapp.network.model.UserRole
 import com.google.firebase.crashlytics.buildtools.reloc.org.apache.http.HttpException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -26,158 +27,110 @@ import kotlinx.coroutines.launch
 import java.io.IOException
 
 class UserViewModel(
-    private val userRepository: UserRepository,
-    private val userPreferences: UserPreferences
+    private val userRepository: UserRepository
 ) : ViewModel() {
-    private val TAG = "UserViewModel"
 
-    companion object {
-        private val VALID_GENDERS = setOf("MALE", "FEMALE", "OTHER")
-        @RequiresApi(Build.VERSION_CODES.O)
-        private val DATE_FORMATTER = java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd")
+    var userUiState: BaseUiState<UserResponse> by mutableStateOf(BaseUiState.Loading)
+        private set
 
-        val Factory: ViewModelProvider.Factory = viewModelFactory {
-            initializer {
-                val app = this[ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY] as HospitalApplication
-                UserViewModel(app.container.userRepository, app.userPreferences)
-            }
-        }
-    }
+    var usersListUiState: BaseUiState<List<UserResponse>> by mutableStateOf(BaseUiState.Loading)
+        private set
 
-    private var _loginState = mutableStateOf<BaseUiState<LoginResponse?>>(BaseUiState.Success(null))
-    val loginState: State<BaseUiState<LoginResponse?>> = _loginState
+    var createUserUiState: BaseUiState<Long> by mutableStateOf(BaseUiState.Loading)
+        private set
 
     private val _currentUser = MutableStateFlow<UserResponse?>(null)
     val currentUser: StateFlow<UserResponse?> = _currentUser
 
-    var userDetailsUiState: BaseUiState<UserResponse?> by mutableStateOf(BaseUiState.Success(null))
-        private set
+    private val _usersList = MutableStateFlow<List<UserResponse>>(emptyList())
+    val usersList: StateFlow<List<UserResponse>> = _usersList
 
-    var createUserUiState: BaseUiState<UserResponse?> by mutableStateOf(BaseUiState.Success(null))
-        private set
+    private val _errorMessage = MutableStateFlow<String?>(null)
+    val errorMessage: StateFlow<String?> = _errorMessage
 
-    var errorMessage: String? by mutableStateOf(null)
-        private set
 
-    init {
+    fun createInitialUser(role: UserRole) {
         viewModelScope.launch {
-            val userId = userPreferences.getUserId()
-            userId?.let {
-                getUserById(it)
-            }
-        }
-    }
-
-    @RequiresApi(Build.VERSION_CODES.O)
-    fun createUser(request: SignupRequest) {
-        viewModelScope.launch {
+            createUserUiState = BaseUiState.Loading
             try {
-                createUserUiState = BaseUiState.Loading
-                errorMessage = null
-
-                validateSignupRequest(request)
-
-                val result = userRepository.createUser(request)
-                Log.d(TAG, "User created successfully: ${result.id}")
-
-                // Save user data
-                userPreferences.saveUser(result)
-                userPreferences.saveUserId(result.id)
-
-                // Update UI state
-                _currentUser.value = result
-                createUserUiState = BaseUiState.Success(result)
-
+                val userId = userRepository.createInitialUser(role)
+                createUserUiState = BaseUiState.Success(userId)
             } catch (e: Exception) {
-                Log.e(TAG, "Error creating user", e)
-                handleCreateUserError(e)
-            }
-        }
-    }
-
-    @RequiresApi(Build.VERSION_CODES.O)
-    private fun validateSignupRequest(request: SignupRequest) {
-
-        when (request.role) {
-            "DOCTOR" -> {
-                if (request.specialization.isNullOrBlank()) {
-                    throw IllegalArgumentException("Specialization is required for doctors")
-                }
-                if (request.licenseNumber.isNullOrBlank()) {
-                    throw IllegalArgumentException("License number is required for doctors")
-                }
-                if (request.experienceYears == null || request.experienceYears < 0) {
-                    throw IllegalArgumentException("Valid years of experience is required")
-                }
-            }
-            "PATIENT" -> {
-                if (request.bloodGroup.isNullOrBlank()) {
-                    throw IllegalArgumentException("Blood group is required for patients")
-                }
-            }
-            else -> throw IllegalArgumentException("Invalid role selected")
-        }
-    }
-
-
-    private fun handleCreateUserError(e: Exception) {
-        errorMessage = when (e) {
-            is IllegalArgumentException -> e.message
-            is IOException -> "Network error: Please check your connection"
-            else -> when {
-                e.message?.contains("409") == true -> "Username or email already exists"
-                e.message?.contains("400") == true -> "Invalid input data"
-                else -> "Error creating account: ${e.message}"
-            }
-        }
-        Log.e(TAG, "Error details: ${e.message}", e)
-        createUserUiState = BaseUiState.Error
-    }
-
-    fun clearError() {
-        errorMessage = null
-    }
-
-    fun login(username: String, password: String) {
-        viewModelScope.launch {
-            try {
-                _loginState.value = BaseUiState.Loading
-                val response = userRepository.login(username, password)
-                userPreferences.saveUserId(response.userId)
-                getUserById(response.userId)
-                _loginState.value = BaseUiState.Success(response)
-            } catch (e: Exception) {
-                _loginState.value = BaseUiState.Error
-                errorMessage = when {
-                    e.message?.contains("401") == true -> "Invalid username or password"
-                    e is IOException -> "Network error: Please check your connection"
-                    else -> "Login failed: ${e.message}"
-                }
-                e.printStackTrace()
+                _errorMessage.value = e.message ?: "Error creating user"
+                createUserUiState = BaseUiState.Error
             }
         }
     }
 
     fun getUserById(id: Long) {
         viewModelScope.launch {
-            userDetailsUiState = BaseUiState.Loading
+            userUiState = BaseUiState.Loading
             try {
-                val result = userRepository.getUserById(id)
-                _currentUser.value = result
-                userPreferences.saveUser(result)
-                userDetailsUiState = BaseUiState.Success(result)
+                val user = userRepository.getUserById(id)
+                _currentUser.value = user
+                userUiState = BaseUiState.Success(user)
             } catch (e: Exception) {
-                userDetailsUiState = BaseUiState.Error
-                errorMessage = "Failed to get user details: ${e.message}"
+                _errorMessage.value = e.message ?: "Error fetching user"
+                userUiState = BaseUiState.Error
             }
         }
     }
 
-    fun logout() {
+    fun getUsersByRole(role: UserRole) {
         viewModelScope.launch {
-            userPreferences.clearUserData()
-            _currentUser.value = null
-            _loginState.value = BaseUiState.Success(null)
+            usersListUiState = BaseUiState.Loading
+            try {
+                val users = userRepository.getUsersByRole(role)
+                _usersList.value = users
+                usersListUiState = BaseUiState.Success(users)
+            } catch (e: Exception) {
+                _errorMessage.value = e.message ?: "Error fetching users"
+                usersListUiState = BaseUiState.Error
+            }
+        }
+    }
+
+    fun getLatestUserByRole(role: UserRole) {
+        viewModelScope.launch {
+            userUiState = BaseUiState.Loading
+            try {
+                val user = userRepository.getLatestUserByRole(role)
+                if (user != null) {
+                    _currentUser.value = user
+                    userUiState = BaseUiState.Success(user)
+                } else {
+                    _errorMessage.value = "No user found for role: ${role.name}"
+                    userUiState = BaseUiState.Error
+                }
+            } catch (e: Exception) {
+                _errorMessage.value = e.message ?: "Error fetching latest user"
+                userUiState = BaseUiState.Error
+            }
+        }
+    }
+
+    fun deleteUser(id: Long) {
+        viewModelScope.launch {
+            try {
+                userRepository.deleteUser(id)
+                // Refresh user list if needed
+                _currentUser.value?.let { current ->
+                    getUsersByRole(UserRole.valueOf(current.role))
+                }
+            } catch (e: Exception) {
+                _errorMessage.value = e.message ?: "Error deleting user"
+            }
+        }
+    }
+
+    companion object {
+        val Factory: ViewModelProvider.Factory = viewModelFactory {
+            initializer {
+                val application = (this[ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY] as HospitalApplication)
+                UserViewModel(
+                    userRepository = application.container.userRepository
+                )
+            }
         }
     }
 }

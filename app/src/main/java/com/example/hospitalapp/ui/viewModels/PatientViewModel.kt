@@ -32,71 +32,25 @@ class PatientViewModel(
     var patientDetailsUiState: BaseUiState<PatientResponse> by mutableStateOf(BaseUiState.Loading)
         private set
 
-    var patientVitalsUiState: BaseUiState<List<VitalsResponse>> by mutableStateOf(BaseUiState.Loading)
-        private set
-
     private val _selectedPatient = MutableStateFlow<PatientResponse?>(null)
     val selectedPatient: StateFlow<PatientResponse?> = _selectedPatient
 
-    // Fix for getPatients
-    fun getPatients() {
+    private val _errorMessage = MutableStateFlow<String?>(null)
+    val errorMessage: StateFlow<String?> = _errorMessage
+
+    fun getAllPatients() {
         viewModelScope.launch {
             patientsUiState = BaseUiState.Loading
             try {
                 val result = patientRepository.getAllPatients()
                 patientsUiState = BaseUiState.Success(result)
             } catch (e: Exception) {
+                _errorMessage.value = e.message ?: "Error fetching patients"
                 patientsUiState = BaseUiState.Error
             }
         }
     }
 
-    // Fix for getPatientVitals - collect the Flow
-    fun getPatientVitals(patientId: Long) {
-        viewModelScope.launch {
-            patientVitalsUiState = BaseUiState.Loading
-            try {
-                patientRepository.getPatientVitals(patientId).collect { vitalsList ->
-                    patientVitalsUiState = BaseUiState.Success(vitalsList)
-                }
-            } catch (e: Exception) {
-                patientVitalsUiState = BaseUiState.Error
-            }
-        }
-    }
-
-    fun updatePatient(patientId: Long, request: PatientUpdateRequest) {
-        viewModelScope.launch {
-            patientDetailsUiState = BaseUiState.Loading
-            try {
-                val currentPatient = _selectedPatient.value
-                    ?: throw IllegalStateException("No patient selected")
-
-                val patientRequest = PatientRequest(
-                    username = currentPatient.username,
-                    email = currentPatient.email,
-                    password = "",  // Not needed for update
-                    fName = currentPatient.fName,
-                    lName = currentPatient.lName,
-                    phoneNumber = request.phoneNumber ?: currentPatient.phoneNumber,
-                    gender = currentPatient.gender,
-                    dob = currentPatient.dob,
-                    address = request.address,
-                    bloodGroup = request.bloodGroup ?: currentPatient.bloodGroup,
-                    allergies = request.allergies?.split(",")?.map { it.trim() } ?: currentPatient.allergies,
-                    medicalHistory = currentPatient.medicalHistory
-                )
-
-                val result = patientRepository.updatePatient(patientId, patientRequest)
-                _selectedPatient.value = result
-                patientDetailsUiState = BaseUiState.Success(result)
-            } catch (e: Exception) {
-                patientDetailsUiState = BaseUiState.Error
-            }
-        }
-    }
-
-    // Add other necessary functions
     fun getPatientById(id: Long) {
         viewModelScope.launch {
             patientDetailsUiState = BaseUiState.Loading
@@ -105,6 +59,35 @@ class PatientViewModel(
                 _selectedPatient.value = result
                 patientDetailsUiState = BaseUiState.Success(result)
             } catch (e: Exception) {
+                _errorMessage.value = e.message ?: "Error fetching patient details"
+                patientDetailsUiState = BaseUiState.Error
+            }
+        }
+    }
+
+    fun createPatientDetails(userId: Long, request: PatientRequest) {
+        viewModelScope.launch {
+            patientDetailsUiState = BaseUiState.Loading
+            try {
+                val result = patientRepository.createPatientDetails(userId, request)
+                _selectedPatient.value = result
+                patientDetailsUiState = BaseUiState.Success(result)
+            } catch (e: Exception) {
+                _errorMessage.value = e.message ?: "Error creating patient details"
+                patientDetailsUiState = BaseUiState.Error
+            }
+        }
+    }
+
+    fun updatePatientDetails(userId: Long, request: PatientRequest) {
+        viewModelScope.launch {
+            patientDetailsUiState = BaseUiState.Loading
+            try {
+                val result = patientRepository.updatePatientDetails(userId, request)
+                _selectedPatient.value = result
+                patientDetailsUiState = BaseUiState.Success(result)
+            } catch (e: Exception) {
+                _errorMessage.value = e.message ?: "Error updating patient details"
                 patientDetailsUiState = BaseUiState.Error
             }
         }

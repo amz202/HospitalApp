@@ -28,29 +28,26 @@ class DoctorViewModel(
     var doctorPatientsUiState: BaseUiState<List<PatientResponse>> by mutableStateOf(BaseUiState.Loading)
         private set
 
-    var doctorAppointmentsUiState: BaseUiState<List<AppointmentResponse>> by mutableStateOf(BaseUiState.Loading)
-        private set
-
-    private val _doctors = MutableStateFlow<List<DoctorResponse>>(emptyList())
-    val doctors: StateFlow<List<DoctorResponse>> = _doctors
-
     private val _selectedDoctor = MutableStateFlow<DoctorResponse?>(null)
     val selectedDoctor: StateFlow<DoctorResponse?> = _selectedDoctor
+
+    private val _errorMessage = MutableStateFlow<String?>(null)
+    val errorMessage: StateFlow<String?> = _errorMessage
 
     fun getDoctors() {
         viewModelScope.launch {
             doctorsUiState = BaseUiState.Loading
             try {
                 val result = doctorRepository.getDoctors()
-                _doctors.value = result
                 doctorsUiState = BaseUiState.Success(result)
             } catch (e: Exception) {
+                _errorMessage.value = e.message ?: "Error fetching doctors"
                 doctorsUiState = BaseUiState.Error
             }
         }
     }
 
-    fun getDoctorDetails(id: Long) {
+    fun getDoctorById(id: Long) {
         viewModelScope.launch {
             doctorDetailsUiState = BaseUiState.Loading
             try {
@@ -58,32 +55,49 @@ class DoctorViewModel(
                 _selectedDoctor.value = result
                 doctorDetailsUiState = BaseUiState.Success(result)
             } catch (e: Exception) {
+                _errorMessage.value = e.message ?: "Error fetching doctor details"
                 doctorDetailsUiState = BaseUiState.Error
             }
         }
     }
 
-    fun createDoctor(doctor: DoctorRequest) {
-        viewModelScope.launch {
-            doctorsUiState = BaseUiState.Loading
-            try {
-                doctorRepository.createDoctor(doctor)
-                getDoctors() // Refresh the list
-            } catch (e: Exception) {
-                doctorsUiState = BaseUiState.Error
-            }
-        }
-    }
-
-    fun updateDoctor(id: Long, doctor: DoctorRequest) {
+    fun createDoctorDetails(userId: Long, request: DoctorRequest) {
         viewModelScope.launch {
             doctorDetailsUiState = BaseUiState.Loading
             try {
-                val result = doctorRepository.updateDoctor(id, doctor)
+                val result = doctorRepository.createDoctorDetails(userId, request)
                 _selectedDoctor.value = result
                 doctorDetailsUiState = BaseUiState.Success(result)
             } catch (e: Exception) {
+                _errorMessage.value = e.message ?: "Error creating doctor details"
                 doctorDetailsUiState = BaseUiState.Error
+            }
+        }
+    }
+
+    fun updateDoctorDetails(userId: Long, request: DoctorRequest) {
+        viewModelScope.launch {
+            doctorDetailsUiState = BaseUiState.Loading
+            try {
+                val result = doctorRepository.updateDoctorDetails(userId, request)
+                _selectedDoctor.value = result
+                doctorDetailsUiState = BaseUiState.Success(result)
+            } catch (e: Exception) {
+                _errorMessage.value = e.message ?: "Error updating doctor details"
+                doctorDetailsUiState = BaseUiState.Error
+            }
+        }
+    }
+
+    fun getDoctorsBySpecialization(specialization: String) {
+        viewModelScope.launch {
+            doctorsUiState = BaseUiState.Loading
+            try {
+                val result = doctorRepository.getDoctorsBySpecialization(specialization)
+                doctorsUiState = BaseUiState.Success(result)
+            } catch (e: Exception) {
+                _errorMessage.value = e.message ?: "Error fetching doctors by specialization"
+                doctorsUiState = BaseUiState.Error
             }
         }
     }
@@ -95,40 +109,8 @@ class DoctorViewModel(
                 val result = doctorRepository.getDoctorPatients(doctorId)
                 doctorPatientsUiState = BaseUiState.Success(result)
             } catch (e: Exception) {
+                _errorMessage.value = e.message ?: "Error fetching doctor's patients"
                 doctorPatientsUiState = BaseUiState.Error
-            }
-        }
-    }
-
-    fun getDoctorsBySpecialization(specialization: String) {
-        viewModelScope.launch {
-            doctorsUiState = BaseUiState.Loading
-            try {
-                val result = doctorRepository.getDoctorsBySpecialization(specialization)
-                _doctors.value = result
-                doctorsUiState = BaseUiState.Success(result)
-            } catch (e: Exception) {
-                doctorsUiState = BaseUiState.Error
-            }
-        }
-    }
-
-    fun prescribeMedication(doctorId: Long, appointmentId: Long, medication: MedicationRequest) {
-        viewModelScope.launch {
-            try {
-                doctorRepository.prescribeMedication(doctorId, appointmentId, medication)
-            } catch (e: Exception) {
-                // Handle error
-            }
-        }
-    }
-
-    fun provideFeedback(doctorId: Long, appointmentId: Long, feedback: FeedbackRequest) {
-        viewModelScope.launch {
-            try {
-                doctorRepository.provideFeedback(doctorId, appointmentId, feedback)
-            } catch (e: Exception) {
-                // Handle error
             }
         }
     }
