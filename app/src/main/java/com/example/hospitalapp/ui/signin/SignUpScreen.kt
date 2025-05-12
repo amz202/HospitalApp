@@ -1,6 +1,7 @@
 package com.example.hospitalapp.ui.signin
 
 import android.os.Build
+import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -210,10 +211,12 @@ fun SignupScreen(
                         lName = lastName,
                         phoneNumber = phoneNumber.takeIf { it.isNotBlank() },
                         gender = Gender.OTHER.toString(),
-                        dob = "01-02-2025", // Default value
+                        dob = "2025-02-01", // Default value
                         address = "Not specified", // Default value
+                        roles = setOf(selectedRole.trim().uppercase())
                     )
                     userViewModel.createUser(request)
+                    Log.d("SignUpScreen", "Sending signup request: $request")
                 },
                 enabled = username.isNotBlank() && password.isNotBlank() &&
                         email.isNotBlank() && firstName.isNotBlank() &&
