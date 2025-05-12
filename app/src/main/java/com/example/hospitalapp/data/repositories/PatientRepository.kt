@@ -51,6 +51,7 @@ class PatientRepositoryImpl @Inject constructor(
         return user.toPatientResponse(details)
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override suspend fun createPatientDetails(userId: Long, request: PatientRequest): PatientResponse {
         // Verify the user exists and has PATIENT role
         val user = userDao.getUserById(userId)

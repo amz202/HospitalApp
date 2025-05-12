@@ -11,9 +11,7 @@ data class AppointmentResponse(
     val type: String,
     val notes: String?,
     val reason: String?,
-    val meetingLink: String?,
-    val createdAt: String,
-    val updatedAt: String
+    val meetingLink: String?
 )
 @Serializable
 data class AppointmentRequest(
@@ -22,7 +20,8 @@ data class AppointmentRequest(
     val scheduledTime: String,
     val type: String,
     val notes: String? = null,
-    val reason: String? = null
+    val reason: String? = null,
+    val virtualMeetingUrl: String? = null
 )
 
 enum class AppointmentStatus {

@@ -27,9 +27,6 @@ class VitalsRepositoryImpl @Inject constructor(
     private val patientDetailDao: PatientDetailDao
 ) : VitalsRepository {
 
-    private val currentDate = "2025-05-12 20:32:47" // Current UTC time
-    private val currentUser = "amz202" // Current user's login
-
     override suspend fun getVitalsById(id: Long): VitalsResponse {
         return vitalsDao.getVitalsById(id)?.toVitalsResponse(userDao, patientDetailDao)
             ?: throw IllegalStateException("Vitals not found")
@@ -41,6 +38,7 @@ class VitalsRepositoryImpl @Inject constructor(
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override suspend fun createVitals(request: VitalsRequest): VitalsResponse {
         val vitalsEntity = VitalsEntity(
             patientId = request.patientId,
@@ -51,7 +49,7 @@ class VitalsRepositoryImpl @Inject constructor(
             oxygenSaturation = request.oxygenSaturation,
             respiratoryRate = request.respiratoryRate,
             bloodSugar = request.bloodSugar,
-            recordedAt = currentDate,
+            recordedAt = LocalDateTime.now().toString(),
             critical = false,  // Default values for critical tracking
             criticalNotes = null,
             alertSent = false

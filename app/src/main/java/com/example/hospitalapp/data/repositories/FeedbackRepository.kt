@@ -3,7 +3,9 @@ package com.example.hospitalapp.data.repositories
 import android.os.Build
 import androidx.annotation.RequiresApi
 import com.example.hospitalapp.data.local.dao.AppointmentDao
+import com.example.hospitalapp.data.local.dao.DoctorDetailDao
 import com.example.hospitalapp.data.local.dao.FeedbackDao
+import com.example.hospitalapp.data.local.dao.PatientDetailDao
 import com.example.hospitalapp.data.local.dao.UserDao
 import com.example.hospitalapp.data.local.entities.FeedbackEntity
 import com.example.hospitalapp.data.local.extensions.toDoctorResponse
@@ -19,14 +21,15 @@ interface FeedbackRepository {
     suspend fun getFeedbackByPatient(patientId: Long): List<FeedbackResponse>
     suspend fun updateFeedback(id: Long, feedback: FeedbackRequest): FeedbackResponse
     suspend fun hasFeedback(appointmentId: Long): Boolean
-    suspend fun getAppointmentsWithoutFeedback(doctorId: Long): List<AppointmentResponse>
     suspend fun createFeedback(feedback: FeedbackRequest): FeedbackResponse
 }
 
 class FeedbackRepositoryImpl @Inject constructor(
     private val feedbackDao: FeedbackDao,
     private val appointmentDao: AppointmentDao,
-    private val userDao: UserDao
+    private val userDao: UserDao,
+    private val doctorDetailDao: DoctorDetailDao,
+    private val patientDetailDao: PatientDetailDao,
 ) : FeedbackRepository {
 
     @RequiresApi(Build.VERSION_CODES.O)
@@ -71,28 +74,6 @@ class FeedbackRepositoryImpl @Inject constructor(
         return feedbackDao.hasFeedback(appointmentId)
     }
 
-    override suspend fun getAppointmentsWithoutFeedback(doctorId: Long): List<AppointmentResponse> {
-        return feedbackDao.getAppointmentsWithoutFeedback(doctorId).map { appointmentEntity ->
-            val patient = userDao.getUserById(appointmentEntity.patientId)?.toPatientResponse()
-                ?: throw IllegalStateException("Patient not found")
-            val doctor = userDao.getUserById(appointmentEntity.doctorId)?.toDoctorResponse()
-                ?: throw IllegalStateException("Doctor not found")
-
-            AppointmentResponse(
-                id = appointmentEntity.id,
-                patient = patient,
-                doctor = doctor,
-                scheduledTime = appointmentEntity.scheduledTime,
-                status = AppointmentStatus.fromString(appointmentEntity.status),
-                type = appointmentEntity.type,
-                notes = appointmentEntity.notes,
-                reason = appointmentEntity.reason,
-                meetingLink = appointmentEntity.meetingLink,
-                createdAt = appointmentEntity.createdAt,
-                updatedAt = appointmentEntity.updatedAt
-            )
-        }
-    }
 
     @RequiresApi(Build.VERSION_CODES.O)
     override suspend fun createFeedback(feedback: FeedbackRequest): FeedbackResponse {
@@ -126,11 +107,15 @@ class FeedbackRepositoryImpl @Inject constructor(
     }
 
     private suspend fun FeedbackEntity.toFeedbackResponse(): FeedbackResponse {
-        val doctor = userDao.getUserById(doctorId)?.toDoctorResponse()
-            ?: throw IllegalStateException("Doctor not found")
+        val doctor = userDao.getUserById(doctorId)?.toDoctorResponse(
+            details = doctorDetailDao.getDoctorDetailByUserId(doctorId)
+                ?: throw IllegalStateException("Doctor details not found")
+        ) ?: throw IllegalStateException("Doctor not found")
 
-        val patient = userDao.getUserById(patientId)?.toPatientResponse()
-            ?: throw IllegalStateException("Patient not found")
+        val patient = userDao.getUserById(patientId)?.toPatientResponse(
+            details = patientDetailDao.getPatientDetailByUserId(patientId)
+                ?: throw IllegalStateException("Patient details not found")
+        ) ?: throw IllegalStateException("Patient not found")
 
         val appointment = appointmentDao.getAppointmentById(appointmentId)
             ?: throw IllegalStateException("Appointment not found")
@@ -154,9 +139,7 @@ class FeedbackRepositoryImpl @Inject constructor(
                 type = appointment.type,
                 notes = appointment.notes,
                 reason = appointment.reason,
-                meetingLink = appointment.meetingLink,
-                createdAt = appointment.createdAt,
-                updatedAt = appointment.updatedAt
+                meetingLink = appointment.virtualMeetingUrl
             )
         )
     }

@@ -18,7 +18,6 @@ import com.example.hospitalapp.data.repositories.MedicationRepositoryImpl
 import com.example.hospitalapp.data.repositories.PatientRepository
 import com.example.hospitalapp.data.repositories.PatientRepositoryImpl
 import com.example.hospitalapp.data.repositories.ReportRepository
-import com.example.hospitalapp.data.repositories.ReportRepositoryImpl
 import com.example.hospitalapp.data.repositories.UserRepository
 import com.example.hospitalapp.data.repositories.UserRepositoryImpl
 import com.example.hospitalapp.data.repositories.VitalsRepository
@@ -79,13 +78,15 @@ class DefaultAppContainer(private val context: Context) : AppContainer {
 
     // Repositories
     override val reportRepository: ReportRepository by lazy {
-        ReportRepositoryImpl(
+        ReportRepository(
             reportDao = reportDao,
             appointmentDao = appointmentDao,
             userDao = userDao,
             vitalsDao = vitalsDao,
             medicationDao = medicationDao,
-            feedbackDao = feedbackDao
+            feedbackDao = feedbackDao,
+            patientDetailDao = patientDao,
+            doctorDetailDao = doctorDao,
         )
     }
 
@@ -94,10 +95,7 @@ class DefaultAppContainer(private val context: Context) : AppContainer {
             userDao = userDao,
             patientDetailDao = patientDao,
             appointmentDao = appointmentDao,
-            medicationDao = medicationDao,
-            vitalsDao = vitalsDao,
-            reportDao = reportDao,
-            feedbackDao = feedbackDao,
+            doctorDetailDao = doctorDao,
         )
     }
 
@@ -110,6 +108,8 @@ class DefaultAppContainer(private val context: Context) : AppContainer {
             feedbackDao = feedbackDao,
             userDao = userDao,
             appointmentDao = appointmentDao,
+            doctorDetailDao = doctorDao,
+            patientDetailDao = patientDao,
         )
     }
 
@@ -117,6 +117,8 @@ class DefaultAppContainer(private val context: Context) : AppContainer {
         AppointmentRepositoryImpl(
             appointmentDao = appointmentDao,
             userDao = userDao,
+            patientDetailDao = patientDao,
+            doctorDetailDao = doctorDao,
         )
     }
 
@@ -125,8 +127,7 @@ class DefaultAppContainer(private val context: Context) : AppContainer {
             userDao = userDao,
             doctorDetailDao = doctorDao,
             appointmentDao = appointmentDao,
-            medicationDao = medicationDao,
-            feedbackDao = feedbackDao,
+            patientDetailDao = patientDao,
         )
     }
 
@@ -134,6 +135,7 @@ class DefaultAppContainer(private val context: Context) : AppContainer {
         MedicationRepositoryImpl(
             medicationDao = medicationDao,
             userDao = userDao,
+            patientDetailDao = patientDao,
         )
     }
 
@@ -141,6 +143,7 @@ class DefaultAppContainer(private val context: Context) : AppContainer {
         VitalsRepositoryImpl(
             vitalsDao = vitalsDao,
             userDao = userDao,
+            patientDetailDao = patientDao,
         )
     }
 

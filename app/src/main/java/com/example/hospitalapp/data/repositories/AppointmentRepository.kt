@@ -22,21 +22,15 @@ interface AppointmentRepository {
     suspend fun getPatientAppointments(patientId: Long): List<AppointmentResponse>
     suspend fun getDoctorAppointments(doctorId: Long): List<AppointmentResponse>
     suspend fun getAppointmentsByStatus(status: AppointmentStatus): List<AppointmentResponse>
-    suspend fun getUpcomingAppointmentsByPatient(patientId: Long): List<AppointmentResponse>
-    suspend fun getUpcomingAppointmentsByDoctor(doctorId: Long): List<AppointmentResponse>
-    suspend fun updateAppointmentStatus(id: Long, status: AppointmentStatus): AppointmentResponse
-    suspend fun cancelAppointment(id: Long): AppointmentResponse
 }
 
-class AppointmentRepositoryImpl @Inject constructor(
+class AppointmentRepositoryImpl (
     private val appointmentDao: AppointmentDao,
     private val userDao: UserDao,
     private val patientDetailDao: PatientDetailDao,
     private val doctorDetailDao: DoctorDetailDao
 ) : AppointmentRepository {
 
-    private val currentDate = "2025-05-12 20:38:34" // Current UTC time
-    private val currentUser = "amz202" // Current user's login
 
     override suspend fun getAppointments(): List<AppointmentResponse> {
         return appointmentDao.getAllAppointments().map {
@@ -45,33 +39,34 @@ class AppointmentRepositoryImpl @Inject constructor(
     }
 
     override suspend fun getAppointmentById(id: Long): AppointmentResponse {
-        return appointmentDao.getAppointmentById(id)
-            ?.toAppointmentResponse(userDao, patientDetailDao, doctorDetailDao)
-            ?: throw IllegalStateException("Appointment not found")
+        val appointment = appointmentDao.getAppointmentById(id)
+            ?: throw IllegalStateException("Appointment not found with id: $id")
+        return appointment.toAppointmentResponse(userDao, patientDetailDao, doctorDetailDao)
     }
 
     override suspend fun createAppointment(request: AppointmentRequest): AppointmentResponse {
-        // Validate patient exists
-        userDao.getUserById(request.patientId)
-            ?: throw IllegalStateException("Patient not found")
+        // Validate patient exists and has patient details
+        val patient = userDao.getUserById(request.patientId)
+            ?: throw IllegalStateException("Patient not found with id: ${request.patientId}")
+        patientDetailDao.getPatientDetailByUserId(request.patientId)
+            ?: throw IllegalStateException("Patient details not found for id: ${request.patientId}")
 
-        // Validate doctor exists
-        userDao.getUserById(request.doctorId)
-            ?: throw IllegalStateException("Doctor not found")
+        // Validate doctor exists and has doctor details
+        val doctor = userDao.getUserById(request.doctorId)
+            ?: throw IllegalStateException("Doctor not found with id: ${request.doctorId}")
+        doctorDetailDao.getDoctorDetailByUserId(request.doctorId)
+            ?: throw IllegalStateException("Doctor details not found for id: ${request.doctorId}")
 
         val appointmentEntity = AppointmentEntity(
             patientId = request.patientId,
             doctorId = request.doctorId,
             scheduledTime = request.scheduledTime,
-            appointmentStatus = request.status.name,
+            appointmentStatus = request.type,
             type = request.type,
-            reason = request.reason,
+            reason = request.reason.toString(),
             notes = request.notes,
             virtualMeetingUrl = request.virtualMeetingUrl,
-            createdAt = currentDate,
-            updatedAt = currentDate,
-            createdBy = currentUser,
-            updatedBy = currentUser
+            status = request.type,
         )
 
         val id = appointmentDao.insertAppointment(appointmentEntity)
@@ -80,27 +75,30 @@ class AppointmentRepositoryImpl @Inject constructor(
 
     override suspend fun updateAppointment(id: Long, request: AppointmentRequest): AppointmentResponse {
         val existing = appointmentDao.getAppointmentById(id)
-            ?: throw IllegalStateException("Appointment not found")
+            ?: throw IllegalStateException("Appointment not found with id: $id")
 
-        // Validate patient exists
-        userDao.getUserById(request.patientId)
-            ?: throw IllegalStateException("Patient not found")
+        // Validate patient exists and has patient details
+        val patient = userDao.getUserById(request.patientId)
+            ?: throw IllegalStateException("Patient not found with id: ${request.patientId}")
+        patientDetailDao.getPatientDetailByUserId(request.patientId)
+            ?: throw IllegalStateException("Patient details not found for id: ${request.patientId}")
 
-        // Validate doctor exists
-        userDao.getUserById(request.doctorId)
-            ?: throw IllegalStateException("Doctor not found")
+        // Validate doctor exists and has doctor details
+        val doctor = userDao.getUserById(request.doctorId)
+            ?: throw IllegalStateException("Doctor not found with id: ${request.doctorId}")
+        doctorDetailDao.getDoctorDetailByUserId(request.doctorId)
+            ?: throw IllegalStateException("Doctor details not found for id: ${request.doctorId}")
 
         val updated = existing.copy(
             patientId = request.patientId,
             doctorId = request.doctorId,
             scheduledTime = request.scheduledTime,
-            appointmentStatus = request.status.name,
+            appointmentStatus = request.type,
             type = request.type,
-            reason = request.reason,
+            reason = request.reason.toString(),
             notes = request.notes,
             virtualMeetingUrl = request.virtualMeetingUrl,
-            updatedAt = currentDate,
-            updatedBy = currentUser
+            status = request.type,
         )
 
         appointmentDao.updateAppointment(updated)
@@ -108,9 +106,11 @@ class AppointmentRepositoryImpl @Inject constructor(
     }
 
     override suspend fun getPatientAppointments(patientId: Long): List<AppointmentResponse> {
-        // Verify patient exists
-        userDao.getUserById(patientId)
-            ?: throw IllegalStateException("Patient not found")
+        // Verify patient exists and has patient details
+        val patient = userDao.getUserById(patientId)
+            ?: throw IllegalStateException("Patient not found with id: $patientId")
+        patientDetailDao.getPatientDetailByUserId(patientId)
+            ?: throw IllegalStateException("Patient details not found for id: $patientId")
 
         return appointmentDao.getPatientAppointments(patientId).map {
             it.toAppointmentResponse(userDao, patientDetailDao, doctorDetailDao)
@@ -118,9 +118,11 @@ class AppointmentRepositoryImpl @Inject constructor(
     }
 
     override suspend fun getDoctorAppointments(doctorId: Long): List<AppointmentResponse> {
-        // Verify doctor exists
-        userDao.getUserById(doctorId)
-            ?: throw IllegalStateException("Doctor not found")
+        // Verify doctor exists and has doctor details
+        val doctor = userDao.getUserById(doctorId)
+            ?: throw IllegalStateException("Doctor not found with id: $doctorId")
+        doctorDetailDao.getDoctorDetailByUserId(doctorId)
+            ?: throw IllegalStateException("Doctor details not found for id: $doctorId")
 
         return appointmentDao.getDoctorAppointments(doctorId).map {
             it.toAppointmentResponse(userDao, patientDetailDao, doctorDetailDao)
@@ -131,43 +133,5 @@ class AppointmentRepositoryImpl @Inject constructor(
         return appointmentDao.getAppointmentsByStatus(status.name).map {
             it.toAppointmentResponse(userDao, patientDetailDao, doctorDetailDao)
         }
-    }
-
-    override suspend fun getUpcomingAppointmentsByPatient(patientId: Long): List<AppointmentResponse> {
-        // Verify patient exists
-        userDao.getUserById(patientId)
-            ?: throw IllegalStateException("Patient not found")
-
-        return appointmentDao.getFuturePatientAppointments(patientId, currentDate).map {
-            it.toAppointmentResponse(userDao, patientDetailDao, doctorDetailDao)
-        }
-    }
-
-    override suspend fun getUpcomingAppointmentsByDoctor(doctorId: Long): List<AppointmentResponse> {
-        // Verify doctor exists
-        userDao.getUserById(doctorId)
-            ?: throw IllegalStateException("Doctor not found")
-
-        return appointmentDao.getFutureDoctorAppointments(doctorId, currentDate).map {
-            it.toAppointmentResponse(userDao, patientDetailDao, doctorDetailDao)
-        }
-    }
-
-    override suspend fun updateAppointmentStatus(id: Long, status: AppointmentStatus): AppointmentResponse {
-        val existing = appointmentDao.getAppointmentById(id)
-            ?: throw IllegalStateException("Appointment not found")
-
-        val updated = existing.copy(
-            appointmentStatus = status.name,
-            updatedAt = currentDate,
-            updatedBy = currentUser
-        )
-
-        appointmentDao.updateAppointment(updated)
-        return getAppointmentById(id)
-    }
-
-    override suspend fun cancelAppointment(id: Long): AppointmentResponse {
-        return updateAppointmentStatus(id, AppointmentStatus.CANCELLED)
     }
 }
