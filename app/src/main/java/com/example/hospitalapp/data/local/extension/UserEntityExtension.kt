@@ -205,3 +205,36 @@ suspend fun ReportEntity.toReportResponse(
         timePeriodEnd = timePeriodEnd
     )
 }
+fun MedicationRequest.toMedicationEntity(
+    doctorId: Long,
+    appointmentId: Long,
+    currentDate: String
+): MedicationEntity = MedicationEntity(
+    patientId = patientId,
+    appointmentId = appointmentId,
+    name = name,
+    dosage = dosage,
+    frequency = frequency,
+    startDate = startDate,
+    endDate = endDate,
+    instructions = instructions,
+    active = true,
+    createdAt = currentDate,
+    updatedAt = currentDate
+)
+
+fun FeedbackRequest.toFeedbackEntity(
+    doctorId: Long,
+    appointmentId: Long,
+    currentDate: String
+): FeedbackEntity = FeedbackEntity(
+    doctorId = doctorId,
+    patientId = patientId,
+    appointmentId = appointmentId,
+    comments = comments,
+    diagnosis = diagnosis,
+    recommendations = recommendations,
+    nextSteps = nextSteps,
+    createdAt = currentDate,
+    updatedAt = currentDate
+)
