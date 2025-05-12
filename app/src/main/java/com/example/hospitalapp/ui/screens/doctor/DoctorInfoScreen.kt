@@ -8,6 +8,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.hospitalapp.network.model.DoctorRequest
+import com.example.hospitalapp.network.model.DoctorUpdateRequest
 import com.example.hospitalapp.ui.viewModels.BaseUiState
 import com.example.hospitalapp.ui.viewModels.DoctorViewModel
 
@@ -22,8 +23,8 @@ fun DoctorInfoScreen(
     var specialization by remember { mutableStateOf("") }
     var licenseNumber by remember { mutableStateOf("") }
     var qualification by remember { mutableStateOf("") }
-    var experienceYears by remember { mutableStateOf("") }
-    var consultationFee by remember { mutableStateOf("") }
+    var experienceYears by remember { mutableStateOf("0") }
+    var consultationFee by remember { mutableStateOf("0.0") }
     var phoneNumber by remember { mutableStateOf("") }
     var address by remember { mutableStateOf("") }
     var availableForEmergency by remember { mutableStateOf(true) }
@@ -50,7 +51,7 @@ fun DoctorInfoScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Complete Your Profile") }
+                title = { Text("Professional Information") }
             )
         }
     ) { padding ->
@@ -66,64 +67,52 @@ fun DoctorInfoScreen(
                 value = specialization,
                 onValueChange = { specialization = it },
                 label = { Text("Specialization") },
-                modifier = Modifier.fillMaxWidth(),
-                isError = updateState is BaseUiState.Error && specialization.isBlank()
+                modifier = Modifier.fillMaxWidth()
             )
 
             OutlinedTextField(
                 value = licenseNumber,
                 onValueChange = { licenseNumber = it },
                 label = { Text("License Number") },
-                modifier = Modifier.fillMaxWidth(),
-                isError = updateState is BaseUiState.Error && licenseNumber.isBlank()
+                modifier = Modifier.fillMaxWidth()
             )
 
             OutlinedTextField(
                 value = qualification,
                 onValueChange = { qualification = it },
                 label = { Text("Qualification") },
-                modifier = Modifier.fillMaxWidth(),
-                isError = updateState is BaseUiState.Error && qualification.isBlank()
+                modifier = Modifier.fillMaxWidth()
             )
 
             OutlinedTextField(
                 value = experienceYears,
                 onValueChange = { if (it.all { char -> char.isDigit() }) experienceYears = it },
                 label = { Text("Years of Experience") },
-                modifier = Modifier.fillMaxWidth(),
-                isError = updateState is BaseUiState.Error && experienceYears.isBlank()
+                modifier = Modifier.fillMaxWidth()
             )
 
             OutlinedTextField(
                 value = consultationFee,
                 onValueChange = { if (it.isEmpty() || it.toDoubleOrNull() != null) consultationFee = it },
                 label = { Text("Consultation Fee") },
-                modifier = Modifier.fillMaxWidth(),
-                isError = updateState is BaseUiState.Error && consultationFee.isBlank()
+                modifier = Modifier.fillMaxWidth()
             )
 
             OutlinedTextField(
                 value = phoneNumber,
                 onValueChange = { phoneNumber = it },
                 label = { Text("Phone Number") },
-                modifier = Modifier.fillMaxWidth(),
-                isError = updateState is BaseUiState.Error && phoneNumber.isBlank()
+                modifier = Modifier.fillMaxWidth()
             )
 
             OutlinedTextField(
                 value = address,
                 onValueChange = { address = it },
                 label = { Text("Address") },
-                modifier = Modifier.fillMaxWidth(),
-                minLines = 2,
-                isError = updateState is BaseUiState.Error && address.isBlank()
+                modifier = Modifier.fillMaxWidth()
             )
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
+            Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                 Checkbox(
                     checked = availableForEmergency,
                     onCheckedChange = { availableForEmergency = it }
@@ -136,11 +125,11 @@ fun DoctorInfoScreen(
                     viewModel.updateDoctor(
                         doctorId,
                         DoctorRequest(
-                            fName = selectedDoctor?.fName ?: "",
-                            lName = selectedDoctor?.lName ?: "",
-                            email = selectedDoctor?.email ?: "",
+                            fName = selectedDoctor?.fName ?: "",  // Keep existing name
+                            lName = selectedDoctor?.lName ?: "",  // Keep existing name
+                            email = selectedDoctor?.email ?: "",  // Keep existing email
                             phoneNumber = phoneNumber,
-                            password = "", // Not needed for update
+                            password = "",  // Empty for updates
                             specialization = specialization,
                             licenseNumber = licenseNumber,
                             qualification = qualification,
@@ -156,22 +145,10 @@ fun DoctorInfoScreen(
                         qualification.isNotBlank() &&
                         experienceYears.isNotBlank() &&
                         consultationFee.isNotBlank() &&
-                        address.isNotBlank(),
+                        phoneNumber.isNotBlank(),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Save Profile")
-            }
-
-            if (updateState is BaseUiState.Loading) {
-                CircularProgressIndicator(
-                    modifier = Modifier.align(Alignment.CenterHorizontally)
-                )
-            }
-
-            LaunchedEffect(updateState) {
-                if (updateState is BaseUiState.Success) {
-                    onProfileUpdated()
-                }
+                Text("Save")
             }
         }
     }

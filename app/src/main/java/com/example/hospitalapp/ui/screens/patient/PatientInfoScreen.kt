@@ -22,8 +22,6 @@ fun PatientInfoScreen(
     var bloodGroup by remember { mutableStateOf("") }
     var emergencyContact by remember { mutableStateOf("") }
     var allergies by remember { mutableStateOf("") }
-    var phoneNumber by remember { mutableStateOf("") }
-    var address by remember { mutableStateOf("") }
 
     val selectedPatient by viewModel.selectedPatient.collectAsState()
     val updateState = viewModel.updatePatientUiState
@@ -38,15 +36,13 @@ fun PatientInfoScreen(
             bloodGroup = patient.bloodGroup ?: ""
             emergencyContact = patient.emergencyContact ?: ""
             allergies = patient.allergies ?: ""
-            phoneNumber = patient.phoneNumber ?: ""
-            address = patient.address
         }
     }
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Complete Your Profile") }
+                title = { Text("Medical Information") }
             )
         }
     ) { padding ->
@@ -62,16 +58,14 @@ fun PatientInfoScreen(
                 value = bloodGroup,
                 onValueChange = { bloodGroup = it },
                 label = { Text("Blood Group") },
-                modifier = Modifier.fillMaxWidth(),
-                isError = updateState is BaseUiState.Error && bloodGroup.isBlank()
+                modifier = Modifier.fillMaxWidth()
             )
 
             OutlinedTextField(
                 value = emergencyContact,
                 onValueChange = { emergencyContact = it },
                 label = { Text("Emergency Contact") },
-                modifier = Modifier.fillMaxWidth(),
-                isError = updateState is BaseUiState.Error && emergencyContact.isBlank()
+                modifier = Modifier.fillMaxWidth()
             )
 
             OutlinedTextField(
@@ -81,28 +75,10 @@ fun PatientInfoScreen(
                 modifier = Modifier.fillMaxWidth()
             )
 
-            OutlinedTextField(
-                value = phoneNumber,
-                onValueChange = { phoneNumber = it },
-                label = { Text("Phone Number") },
-                modifier = Modifier.fillMaxWidth(),
-                isError = updateState is BaseUiState.Error && phoneNumber.isBlank()
-            )
-
-            OutlinedTextField(
-                value = address,
-                onValueChange = { address = it },
-                label = { Text("Address") },
-                modifier = Modifier.fillMaxWidth(),
-                minLines = 2,
-                isError = updateState is BaseUiState.Error && address.isBlank()
-            )
-
             if (errorMessage != null) {
                 Text(
                     text = errorMessage,
-                    color = MaterialTheme.colorScheme.error,
-                    style = MaterialTheme.typography.bodySmall
+                    color = MaterialTheme.colorScheme.error
                 )
             }
 
@@ -111,30 +87,16 @@ fun PatientInfoScreen(
                     viewModel.updatePatientMedicalInfo(
                         patientId,
                         PatientMedicalInfoRequest(
-                            bloodGroup = bloodGroup.takeIf { it.isNotBlank() }.toString(),
-                            emergencyContact = emergencyContact.takeIf { it.isNotBlank() }.toString(),
-                            allergies = allergies.takeIf { it.isNotBlank() }.toString(),
-                            phoneNumber = phoneNumber.takeIf { it.isNotBlank() },
-                            address = address
+                            bloodGroup = bloodGroup,
+                            emergencyContact = emergencyContact,
+                            allergies = allergies,
+                            primaryDoctorId = null
                         )
                     )
                 },
-                enabled = updateState !is BaseUiState.Loading,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Save Profile")
-            }
-
-            if (updateState is BaseUiState.Loading) {
-                CircularProgressIndicator(
-                    modifier = Modifier.align(Alignment.CenterHorizontally)
-                )
-            }
-
-            LaunchedEffect(updateState) {
-                if (updateState is BaseUiState.Success) {
-                    onProfileUpdated()
-                }
+                Text("Save")
             }
         }
     }
