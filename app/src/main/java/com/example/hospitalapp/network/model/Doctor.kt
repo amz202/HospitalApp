@@ -36,3 +36,14 @@ data class DoctorRequest(
     val consultationFee: Double,
     val availableForEmergency: Boolean = true
 )
+@Serializable
+data class DoctorUpdateRequest(
+    val specialization: String,
+    val licenseNumber: String,
+    val qualification: String,
+    val experienceYears: Int,
+    val consultationFee: Double,
+    val availableForEmergency: Boolean,
+    val phoneNumber: String,
+    val address: String
+)

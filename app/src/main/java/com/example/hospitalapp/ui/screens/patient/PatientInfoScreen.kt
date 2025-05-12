@@ -1,7 +1,5 @@
 package com.example.hospitalapp.ui.screens.patient
 
-import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -9,64 +7,46 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.example.hospitalapp.network.model.PatientMedicalInfoRequest
 import com.example.hospitalapp.ui.viewModels.BaseUiState
 import com.example.hospitalapp.ui.viewModels.PatientViewModel
-import java.time.LocalDate
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
 
-@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PatientInfoScreen(
+    viewModel: PatientViewModel,
     patientId: Long,
-    patientViewModel: PatientViewModel,
-    onInfoSubmitted: () -> Unit,
+    onProfileUpdated: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     var bloodGroup by remember { mutableStateOf("") }
     var emergencyContact by remember { mutableStateOf("") }
     var allergies by remember { mutableStateOf("") }
-    var showError by remember { mutableStateOf(false) }
+    var phoneNumber by remember { mutableStateOf("") }
+    var address by remember { mutableStateOf("") }
 
-    val currentDate = remember {
-        LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
-    }
+    val selectedPatient by viewModel.selectedPatient.collectAsState()
+    val updateState = viewModel.updatePatientUiState
+    val errorMessage = viewModel.errorMessage
 
-    val updateState = patientViewModel.updatePatientUiState
-    val currentPatient by patientViewModel.selectedPatient.collectAsState()
-
-    // Get patient details when screen is first shown
     LaunchedEffect(patientId) {
-        patientViewModel.getPatientDetails(patientId)
+        viewModel.getPatientDetails(patientId)
     }
 
-    // Handle state updates
-    LaunchedEffect(updateState) {
-        when (updateState) {
-            is BaseUiState.Success -> {
-                onInfoSubmitted()
-            }
-            is BaseUiState.Error -> {
-                showError = true
-            }
-            else -> {
-                showError = false
-            }
-        }
-    }
-
-    // Clear state when leaving screen
-    DisposableEffect(Unit) {
-        onDispose {
-            patientViewModel.clearUpdateState()
+    LaunchedEffect(selectedPatient) {
+        selectedPatient?.let { patient ->
+            bloodGroup = patient.bloodGroup ?: ""
+            emergencyContact = patient.emergencyContact ?: ""
+            allergies = patient.allergies ?: ""
+            phoneNumber = patient.phoneNumber ?: ""
+            address = patient.address
         }
     }
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Complete Patient Profile") }
+                title = { Text("Complete Your Profile") }
             )
         }
     ) { padding ->
@@ -74,104 +54,88 @@ fun PatientInfoScreen(
             modifier = modifier
                 .fillMaxSize()
                 .padding(padding)
-                .padding(horizontal = 32.dp)
+                .padding(horizontal = 16.dp)
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Text(
-                "Please provide your medical information",
-                style = MaterialTheme.typography.titleMedium
-            )
-
-            if (currentPatient != null) {
-                Text(
-                    "Patient: ${currentPatient?.fName} ${currentPatient?.lName}",
-                    style = MaterialTheme.typography.bodyMedium
-                )
-                Text(
-                    "Last Updated: $currentDate",
-                    style = MaterialTheme.typography.bodySmall
-                )
-            }
-
             OutlinedTextField(
                 value = bloodGroup,
                 onValueChange = { bloodGroup = it },
                 label = { Text("Blood Group") },
-                singleLine = true,
-                isError = showError && bloodGroup.isBlank(),
-                enabled = updateState !is BaseUiState.Loading,
-                supportingText = if (showError && bloodGroup.isBlank()) {
-                    { Text("Blood group is required") }
-                } else null,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                isError = updateState is BaseUiState.Error && bloodGroup.isBlank()
             )
 
             OutlinedTextField(
                 value = emergencyContact,
                 onValueChange = { emergencyContact = it },
                 label = { Text("Emergency Contact") },
-                singleLine = true,
-                isError = showError && emergencyContact.isBlank(),
-                enabled = updateState !is BaseUiState.Loading,
-                supportingText = if (showError && emergencyContact.isBlank()) {
-                    { Text("Emergency contact is required") }
-                } else null,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                isError = updateState is BaseUiState.Error && emergencyContact.isBlank()
             )
 
             OutlinedTextField(
                 value = allergies,
                 onValueChange = { allergies = it },
-                label = { Text("Allergies (if any)") },
-                minLines = 2,
-                maxLines = 4,
-                isError = showError && allergies.isBlank(),
-                enabled = updateState !is BaseUiState.Loading,
-                supportingText = if (showError && allergies.isBlank()) {
-                    { Text("Please specify 'None' if no allergies") }
-                } else null,
+                label = { Text("Allergies") },
                 modifier = Modifier.fillMaxWidth()
             )
 
+            OutlinedTextField(
+                value = phoneNumber,
+                onValueChange = { phoneNumber = it },
+                label = { Text("Phone Number") },
+                modifier = Modifier.fillMaxWidth(),
+                isError = updateState is BaseUiState.Error && phoneNumber.isBlank()
+            )
+
+            OutlinedTextField(
+                value = address,
+                onValueChange = { address = it },
+                label = { Text("Address") },
+                modifier = Modifier.fillMaxWidth(),
+                minLines = 2,
+                isError = updateState is BaseUiState.Error && address.isBlank()
+            )
+
+            if (errorMessage != null) {
+                Text(
+                    text = errorMessage,
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
+
             Button(
                 onClick = {
-                    if (bloodGroup.isBlank() || emergencyContact.isBlank() || allergies.isBlank()) {
-                        showError = true
-                        return@Button
-                    }
-                    patientViewModel.updatePatientAfterSignup(
-                        patientId = patientId,
-                        bloodGroup = bloodGroup,
-                        emergencyContact = emergencyContact,
-                        allergies = allergies
+                    viewModel.updatePatientMedicalInfo(
+                        patientId,
+                        PatientMedicalInfoRequest(
+                            bloodGroup = bloodGroup.takeIf { it.isNotBlank() }.toString(),
+                            emergencyContact = emergencyContact.takeIf { it.isNotBlank() }.toString(),
+                            allergies = allergies.takeIf { it.isNotBlank() }.toString(),
+                            phoneNumber = phoneNumber.takeIf { it.isNotBlank() },
+                            address = address
+                        )
                     )
                 },
                 enabled = updateState !is BaseUiState.Loading,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                if (updateState is BaseUiState.Loading) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(24.dp),
-                        color = MaterialTheme.colorScheme.onPrimary
-                    )
-                } else {
-                    Text("Complete Profile")
-                }
+                Text("Save Profile")
             }
 
-            if (showError) {
-                Text(
-                    text = patientViewModel.errorMessage ?: "Please fill in all required fields",
-                    color = MaterialTheme.colorScheme.error,
-                    style = MaterialTheme.typography.bodySmall,
-                    modifier = Modifier.padding(horizontal = 16.dp)
+            if (updateState is BaseUiState.Loading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.align(Alignment.CenterHorizontally)
                 )
             }
 
-            Spacer(modifier = Modifier.height(32.dp))
+            LaunchedEffect(updateState) {
+                if (updateState is BaseUiState.Success) {
+                    onProfileUpdated()
+                }
+            }
         }
     }
 }
