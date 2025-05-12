@@ -1,26 +1,8 @@
 package com.example.hospitalapp.network.model
 
 import kotlinx.serialization.Serializable
+import java.time.LocalDate
 
-@Serializable
-data class PatientResponse(
-    val id: Long,
-    val fName: String, // Changed from firstName
-    val lName: String, // Changed from lastName
-    val email: String,
-    val phoneNumber: String,
-    val dob: String,  // Changed from dateOfBirth
-    val bloodGroup: String,
-    val emergencyContact: String,
-    val allergies: String,
-    val active: Boolean,
-    val createdAt: String,
-    val primaryDoctor: DoctorResponse?,
-    val vitalsList: List<VitalsResponse> = emptyList(),
-    val appointments: List<AppointmentResponse> = emptyList(),
-    val medications: List<MedicationResponse> = emptyList(),
-    val reports: List<ReportResponse> = emptyList()
-)
 
 @Serializable
 data class PatientRequest(
@@ -56,15 +38,31 @@ data class PatientMedicalInfoRequest(
 @Serializable
 data class PatientResponse(
     val id: Long,
+    val username: String,
     val email: String,
-    val fName: String,
-    val lName: String,
+    val fName: String?,
+    val lName: String?,
     val phoneNumber: String?,
-    val dob: String,
+    val gender: String?,
+    val dob: String?,
+    val address: String?,
+    val role: String,
     val bloodGroup: String?,
     val emergencyContact: String?,
     val allergies: String?,
-    val primaryDoctorId: Long?,
-    val createdAt: String,
-    val updatedAt: String
+    val primaryDoctor: DoctorResponse?,
+    val version: Long?
+)
+
+@Serializable
+data class PatientUpdateRequest(
+    val bloodGroup: String?,
+    val emergencyContact: String?,
+    val allergies: String?,
+    val fName: String?,
+    val lName: String?,
+    val phoneNumber: String?,
+    val gender: String?,
+    val dob: String?,
+    val address: String?
 )

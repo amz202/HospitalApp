@@ -1,19 +1,20 @@
 package com.example.hospitalapp.network.model
 
 import kotlinx.serialization.Serializable
+import java.time.LocalDate
 
 @Serializable
 data class UserResponse(
     val id: Long,
     val username: String,
     val email: String,
-    val fName: String, // Changed from firstName
-    val lName: String, // Changed from lastName
+    val fName: String?,
+    val lName: String?,
     val phoneNumber: String?,
-    val gender: Gender,
-    val dob: String,  // Changed from dateOfBirth
-    val address: String,
-    val role: String,  // Change from Set<String> to String
+    val gender: String?,
+    val dob: String?,
+    val address: String?,
+    val roles: Set<String>,
     val accountCreationDate: String
 )
 
@@ -45,3 +46,11 @@ data class LoginResponse(
 enum class Gender {
     MALE, FEMALE, OTHER
 }
+
+@Serializable
+data class SignupRequest(
+    val username: String,
+    val password: String,
+    val email: String,
+    val roles: Set<String> = setOf("PATIENT")
+)

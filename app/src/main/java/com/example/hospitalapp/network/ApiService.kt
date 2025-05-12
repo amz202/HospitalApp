@@ -4,6 +4,7 @@ import com.example.hospitalapp.network.model.*
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import okhttp3.ResponseBody
+import retrofit2.Response
 import retrofit2.http.*
 
 interface ApiService {
@@ -35,6 +36,18 @@ interface ApiService {
 
     @POST("api/users/login")
     suspend fun login(@Body request: LoginRequest): LoginResponse
+
+    @POST("api/auth/register")
+    suspend fun register(@Body request: SignupRequest): Response<UserResponse>
+
+    @GET("api/patients/{id}")
+    suspend fun getPatient(@Path("id") id: Long): Response<PatientResponse>
+
+    @PUT("api/patients/{id}")
+    suspend fun updatePatient(
+        @Path("id") id: Long,
+        @Body request: PatientUpdateRequest
+    ): Response<PatientResponse>
 
     @GET("api/users/{id}")
     suspend fun getUserById(@Path("id") id: Long): UserResponse
