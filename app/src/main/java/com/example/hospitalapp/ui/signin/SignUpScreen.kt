@@ -28,8 +28,9 @@ import kotlin.text.format
 fun SignupScreen(
     userViewModel: UserViewModel,
     onBackClick: () -> Unit,
-    onSignUpSuccess: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onSignUpSuccess: (role: String, userId: Long) -> Unit,  // Modified to include role and userId
+
 ) {
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -52,9 +53,7 @@ fun SignupScreen(
     }
 
     LaunchedEffect(currentUser) {
-        if (currentUser != null) {
-            onSignUpSuccess()
-        }
+        currentUser?.let { onSignUpSuccess(selectedRole, it.id) }
     }
 
     LaunchedEffect(createUserState) {

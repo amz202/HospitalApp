@@ -14,6 +14,7 @@ import com.example.hospitalapp.data.repositories.PatientRepository
 import com.example.hospitalapp.network.model.PatientMedicalInfoRequest
 import com.example.hospitalapp.network.model.PatientRequest
 import com.example.hospitalapp.network.model.PatientResponse
+import com.example.hospitalapp.network.model.PatientUpdateRequest
 import com.example.hospitalapp.network.model.ReportResponse
 import com.example.hospitalapp.network.model.VitalsResponse
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -99,27 +100,45 @@ class PatientViewModel(
         }
     }
 
-
-    fun updatePatientMedicalInfo(
-        patientId: Long,
-        request: PatientMedicalInfoRequest
-    ) {
+    fun updatePatient(patientId: Long, request: PatientRequest) {
         viewModelScope.launch {
             try {
                 updatePatientUiState = BaseUiState.Loading
                 errorMessage = null
 
-                val result = patientRepository.updatePatient(patientId, request)
-                _selectedPatient.value = result
-                updatePatientUiState = BaseUiState.Success(result)
+                // Get current patient data to keep existing values
+                val currentPatient = _selectedPatient.value
+                if (currentPatient != null) {
+                    // Create new PatientRequest keeping the existing data
+                    val patientRequest = PatientRequest(
+                        fName = currentPatient.fName,
+                        lName = currentPatient.lName,
+                        email = currentPatient.email,
+                        phoneNumber = request.phoneNumber,
+                        password = "",  // Not needed for update
+                        bloodGroup = request.bloodGroup,
+                        emergencyContact = request.emergencyContact,
+                        allergies = request.allergies,
+                        primaryDoctorId = null,  // Since it's not in PatientResponse, we'll set it to null
+                        gender = currentPatient.gender,
+                        dob = currentPatient.dob,
+                        address = request.address
+                    )
+
+                    val result = patientRepository.updatePatient(patientId, patientRequest)
+                    _selectedPatient.value = result
+                    updatePatientUiState = BaseUiState.Success(result)
+                } else {
+                    throw IllegalStateException("Cannot update: Current patient data not found")
+                }
             } catch (e: Exception) {
                 updatePatientUiState = BaseUiState.Error
                 errorMessage = when {
                     e.message?.contains("400") == true -> "Invalid input data"
                     e is IOException -> "Network error: Please check your connection"
-                    else -> "Error updating medical information: ${e.message}"
+                    else -> "Error updating information: ${e.message}"
                 }
-                Log.e("PatientViewModel", "Error updating medical info", e)
+                Log.e("PatientViewModel", "Error updating patient", e)
             }
         }
     }

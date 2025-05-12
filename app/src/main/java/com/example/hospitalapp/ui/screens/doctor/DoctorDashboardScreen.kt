@@ -264,7 +264,7 @@ private fun PatientCard(
                 )
             }
 
-            if (patient.allergies.isNotBlank()) {
+            if (patient.allergies?.isNotBlank() ?: false) {
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = "Allergies: ${patient.allergies}",

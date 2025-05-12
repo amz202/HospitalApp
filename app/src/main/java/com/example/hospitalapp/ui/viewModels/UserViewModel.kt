@@ -150,11 +150,5 @@ class UserViewModel(
             }
         }
     }
-    fun hasRole(role: String): Boolean {
-        return _currentUser.value?.role == role
-    }
 
-    fun getPrimaryRole(): String? {
-        return _currentUser.value?.role
-    }
 }

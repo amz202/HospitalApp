@@ -22,9 +22,9 @@ class UserPreferences(private val context: Context) {
         private val FIRST_NAME_KEY = stringPreferencesKey("first_name")
         private val LAST_NAME_KEY = stringPreferencesKey("last_name")
         private val ROLE_KEY = stringPreferencesKey("role")
-        private val GENDER_KEY = stringPreferencesKey("gender")   // Add this
-        private val DOB_KEY = stringPreferencesKey("dob")        // Add this
-        private val ADDRESS_KEY = stringPreferencesKey("address") // Add this
+        private val GENDER_KEY = stringPreferencesKey("gender")
+        private val DOB_KEY = stringPreferencesKey("dob")
+        private val ADDRESS_KEY = stringPreferencesKey("address")
     }
 
     suspend fun saveUser(user: UserResponse) {
@@ -32,12 +32,12 @@ class UserPreferences(private val context: Context) {
             preferences[USER_ID_KEY] = user.id
             preferences[USERNAME_KEY] = user.username
             preferences[EMAIL_KEY] = user.email
-            preferences[FIRST_NAME_KEY] = user.fName
-            preferences[LAST_NAME_KEY] = user.lName
-            preferences[ROLE_KEY] = user.role
-            preferences[GENDER_KEY] = user.gender.toString()
-            preferences[DOB_KEY] = user.dob
-            preferences[ADDRESS_KEY] = user.address
+            preferences[FIRST_NAME_KEY] = user.fName.toString()
+            preferences[LAST_NAME_KEY] = user.lName.toString()
+            preferences[ROLE_KEY] = user.roles.firstOrNull() ?: ""
+            preferences[GENDER_KEY] = user.gender.toString()  // Use enum name
+            preferences[DOB_KEY] = user.dob.toString()
+            preferences[ADDRESS_KEY] = user.address ?: ""
         }
     }
 
@@ -56,27 +56,22 @@ class UserPreferences(private val context: Context) {
     suspend fun getUser(): UserInfo? {
         val preferences = context.dataStore.data.first()
 
-        val username = preferences[USERNAME_KEY] ?: return null
-        val email = preferences[EMAIL_KEY] ?: return null
-        val firstName = preferences[FIRST_NAME_KEY] ?: return null
-        val lastName = preferences[LAST_NAME_KEY] ?: return null
-        val userId = preferences[USER_ID_KEY] ?: return null
-        val roles = preferences[ROLE_KEY] ?: return null
-        val gender = preferences[GENDER_KEY]?.let { Gender.valueOf(it) } ?: return null
-        val dob = preferences[DOB_KEY] ?: return null
-        val address = preferences[ADDRESS_KEY] ?: return null
-
-        return UserInfo(
-            id = userId,
-            username = username,
-            email = email,
-            fName = firstName,
-            lName = lastName,
-            gender = gender,
-            dob = dob,
-            address = address,
-            role = roles
-        )
+        return try {
+            UserInfo(
+                id = preferences[USER_ID_KEY] ?: return null,
+                username = preferences[USERNAME_KEY] ?: return null,
+                email = preferences[EMAIL_KEY] ?: return null,
+                fName = preferences[FIRST_NAME_KEY] ?: return null,
+                lName = preferences[LAST_NAME_KEY] ?: return null,
+                gender = Gender.valueOf(preferences[GENDER_KEY] ?: return null),
+                dob = preferences[DOB_KEY] ?: return null,
+                address = preferences[ADDRESS_KEY] ?: return null,
+                role = preferences[ROLE_KEY] ?: return null
+            )
+        } catch (e: IllegalArgumentException) {
+            // Handle case where Gender.valueOf fails
+            null
+        }
     }
 
     suspend fun clearUserData() {

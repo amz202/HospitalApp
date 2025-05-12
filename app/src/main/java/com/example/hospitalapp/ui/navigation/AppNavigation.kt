@@ -11,10 +11,12 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.example.hospitalapp.data.datastore.UserPreferences
 import com.example.hospitalapp.ui.screens.doctor.DoctorDashboardStateScreen
+import com.example.hospitalapp.ui.screens.doctor.DoctorInfoScreen
 import com.example.hospitalapp.ui.screens.doctor.detail.DoctorAppointmentDetailScreen
 import com.example.hospitalapp.ui.screens.doctor.detail.PatientDetailScreen
 import com.example.hospitalapp.ui.screens.patient.AppointmentBookingScreen
 import com.example.hospitalapp.ui.screens.patient.PatientDashboardStateScreen
+import com.example.hospitalapp.ui.screens.patient.PatientInfoScreen
 import com.example.hospitalapp.ui.screens.patient.detail.AppointmentDetailScreen
 import com.example.hospitalapp.ui.screens.patient.detail.HealthReportScreen
 import com.example.hospitalapp.ui.screens.patient.detail.MedicationDetailScreen
@@ -55,7 +57,7 @@ fun AppNavigation(
         composable<LoginScreenNav> {
             LoginScreen(
                 userViewModel = userViewModel,
-                onLoginSuccess = { role ->  // Single role
+                onLoginSuccess = { role ->
                     when (role) {
                         "PATIENT" -> navController.navigate(PatientDashboardNav)
                         "DOCTOR" -> navController.navigate(DoctorDashboardNav)
@@ -72,9 +74,46 @@ fun AppNavigation(
             SignupScreen(
                 userViewModel = userViewModel,
                 onBackClick = { navController.navigateUp() },
-                onSignUpSuccess = {
+                onSignUpSuccess = { role, userId ->
+                    when (role) {
+                        "PATIENT" -> {
+                            navController.navigate(PatientInfoNav(patientId = userId)) {
+                                popUpTo(LoginScreenNav) { inclusive = true }
+                            }
+                        }
+                        "DOCTOR" -> {
+                            navController.navigate(DoctorInfoNav(doctorId = userId)) {
+                                popUpTo(LoginScreenNav) { inclusive = true }
+                            }
+                        }
+                        else -> Log.e("Navigation", "Unknown role: $role")
+                    }
+                }
+            )
+        }
+
+        // Add the new info screen routes
+        composable<DoctorInfoNav> { backStackEntry ->
+            val args = backStackEntry.toRoute<DoctorInfoNav>()
+            DoctorInfoScreen(
+                viewModel = doctorViewModel,
+                doctorId = args.doctorId,
+                onProfileUpdated = {
+                    navController.navigate(DoctorDashboardNav) {
+                        popUpTo(DoctorInfoNav) { inclusive = true }
+                    }
+                }
+            )
+        }
+
+        composable<PatientInfoNav> { backStackEntry ->
+            val args = backStackEntry.toRoute<PatientInfoNav>()
+            PatientInfoScreen(
+                viewModel = patientViewModel,
+                patientId = args.patientId,
+                onProfileUpdated = {
                     navController.navigate(PatientDashboardNav) {
-                        popUpTo(LoginScreenNav) { inclusive = true }
+                        popUpTo(PatientInfoNav) { inclusive = true }
                     }
                 }
             )

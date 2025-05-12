@@ -107,7 +107,7 @@ fun PatientDetailScreen(
                                 Text("DOB: ${patient.dob}")
                                 Text("Blood Group: ${patient.bloodGroup}")
                                 Text("Phone: ${patient.phoneNumber}")
-                                if (patient.allergies.isNotBlank()) {
+                                if (patient.allergies?.isNotBlank() == true) {
                                     Text(
                                         "Allergies: ${patient.allergies}",
                                         color = MaterialTheme.colorScheme.error
