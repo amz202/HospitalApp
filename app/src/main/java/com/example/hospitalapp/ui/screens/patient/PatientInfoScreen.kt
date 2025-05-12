@@ -12,7 +12,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.example.hospitalapp.network.model.PatientRequest
 import com.example.hospitalapp.network.model.PatientUpdateRequest
 import com.example.hospitalapp.ui.viewModels.BaseUiState
 import com.example.hospitalapp.ui.viewModels.PatientViewModel
@@ -46,8 +45,6 @@ fun PatientInfoScreen(
             bloodGroup = patient.bloodGroup ?: ""
             allergies = patient.allergies
             medicalHistory = patient.medicalHistory
-            phoneNumber = patient.phoneNumber ?: ""
-            address = patient.address
         }
     }
 
@@ -285,14 +282,15 @@ fun PatientInfoScreen(
                         onClick = {
                             showSaveDialog = false
                             selectedPatient?.let { currentPatient ->
-                                viewModel.updatePatient(
+                                viewModel.updatePatientDetails(
                                     patientId,
                                     PatientUpdateRequest(
                                         bloodGroup = bloodGroup.ifBlank { null },
-                                        emergencyContact = currentPatient.phoneNumber,
+                                        emergencyContact = currentPatient.id.toString(),
                                         allergies = allergies.joinToString(","),
                                         phoneNumber = phoneNumber,
-                                        address = address
+                                        address = address,
+                                        medicalHistory = medicalHistory
                                     )
                                 )
                                 onProfileUpdated()

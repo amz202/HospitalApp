@@ -344,11 +344,6 @@ private fun AppointmentsReportCard(appointments: List<AppointmentResponse>) {
                             .format(DateTimeFormatter.ofPattern("MMM dd, HH:mm")),
                         style = MaterialTheme.typography.bodyLarge
                     )
-                    Text(
-                        text = "Dr. ${appointment.doctor.fName} ${appointment.doctor.lName}",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
                 }
                 Text(
                     text = when (appointment.type.uppercase()) {

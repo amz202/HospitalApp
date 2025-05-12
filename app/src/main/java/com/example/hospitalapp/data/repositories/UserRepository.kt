@@ -74,4 +74,5 @@ class UserRepositoryImpl @Inject constructor(
     override suspend fun getLatestUserByRole(role: UserRole): UserResponse? {
         return userDao.getLatestUserByRole(role.toString())?.toUserResponse()
     }
+
 }

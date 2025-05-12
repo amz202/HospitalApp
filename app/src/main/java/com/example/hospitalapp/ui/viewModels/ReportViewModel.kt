@@ -32,63 +32,63 @@ class ReportViewModel(
     private val _selectedReport = MutableStateFlow<ReportResponse?>(null)
     val selectedReport: StateFlow<ReportResponse?> = _selectedReport
 
-    fun generateReport(
-        appointmentId: Long,
-        patientId: Long,
-        doctorId: Long,
-        title: String,
-        summary: String,
-        reportType: String,
-        vitalsId: Long? = null,
-        medicationIds: List<Long> = emptyList(),
-        feedbackId: Long? = null,
-        timePeriodStart: String? = null,
-        timePeriodEnd: String? = null
-    ) {
-        viewModelScope.launch {
-            reportDetailsUiState = BaseUiState.Loading
-            try {
-                val reportRequest = ReportRequest(
-                    title = title,
-                    patientId = patientId,
-                    doctorId = doctorId,
-                    summary = summary,
-                    reportType = reportType,
-                    appointmentId = appointmentId,
-                    vitalsId = vitalsId,
-                    medicationIds = medicationIds,
-                    feedbackId = feedbackId,
-                    timePeriodStart = timePeriodStart,
-                    timePeriodEnd = timePeriodEnd
-                )
+//    fun generateReport(
+//        appointmentId: Long,
+//        patientId: Long,
+//        doctorId: Long,
+//        title: String,
+//        summary: String,
+//        reportType: String,
+//        vitalsId: Long? = null,
+//        medicationIds: List<Long> = emptyList(),
+//        feedbackId: Long? = null,
+//        timePeriodStart: String? = null,
+//        timePeriodEnd: String? = null
+//    ) {
+//        viewModelScope.launch {
+//            reportDetailsUiState = BaseUiState.Loading
+//            try {
+//                val reportRequest = ReportRequest(
+//                    title = title,
+//                    patientId = patientId,
+//                    doctorId = doctorId,
+//                    summary = summary,
+//                    reportType = reportType,
+//                    appointmentId = appointmentId,
+//                    vitalsId = vitalsId,
+//                    medicationIds = medicationIds,
+//                    feedbackId = feedbackId,
+//                    timePeriodStart = timePeriodStart,
+//                    timePeriodEnd = timePeriodEnd
+//                )
+//
+//                // First create the report and get its ID
+//                val reportId = reportRepository.createReport(reportRequest)
+//
+//                // Then fetch the full report response using the ID
+//                val reportResponse = reportRepository.getReportById(reportId)
+//
+//                // Update the states with the full report response
+//                _selectedReport.value = reportResponse
+//                reportDetailsUiState = BaseUiState.Success(reportResponse)
+//            } catch (e: Exception) {
+//                reportDetailsUiState = BaseUiState.Error
+//            }
+//        }
+//    }
 
-                // First create the report and get its ID
-                val reportId = reportRepository.createReport(reportRequest)
-
-                // Then fetch the full report response using the ID
-                val reportResponse = reportRepository.getReportById(reportId)
-
-                // Update the states with the full report response
-                _selectedReport.value = reportResponse
-                reportDetailsUiState = BaseUiState.Success(reportResponse)
-            } catch (e: Exception) {
-                reportDetailsUiState = BaseUiState.Error
-            }
-        }
-    }
-
-    fun getReportById(id: Long) {
-        viewModelScope.launch {
-            reportDetailsUiState = BaseUiState.Loading
-            try {
-                val result = reportRepository.getReportById(id)
-                _selectedReport.value = result
-                reportDetailsUiState = BaseUiState.Success(result)
-            } catch (e: Exception) {
-                reportDetailsUiState = BaseUiState.Error
-            }
-        }
-    }
+//    fun getReportById(id: Long) {
+//        viewModelScope.launch {
+//            reportDetailsUiState = BaseUiState.Loading
+//            try {
+//                val result = reportRepository.getReportById(id)
+//                _selectedReport.value = result
+//                reportDetailsUiState = BaseUiState.Success(result)
+//            } catch (e: Exception) {
+//                reportDetailsUiState = BaseUiState.Error
+//            }
+//        }
+//    }
 
     fun getPatientReports(patientId: Long) {
         viewModelScope.launch {

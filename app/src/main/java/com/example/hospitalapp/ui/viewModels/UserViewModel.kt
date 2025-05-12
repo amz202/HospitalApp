@@ -36,8 +36,7 @@ class UserViewModel(
     var usersListUiState: BaseUiState<List<UserResponse>> by mutableStateOf(BaseUiState.Loading)
         private set
 
-    var createUserUiState: BaseUiState<Long> by mutableStateOf(BaseUiState.Loading)
-        private set
+    var createUserUiState: BaseUiState<Long?> by mutableStateOf(BaseUiState.Success(null))
 
     private val _currentUser = MutableStateFlow<UserResponse?>(null)
     val currentUser: StateFlow<UserResponse?> = _currentUser

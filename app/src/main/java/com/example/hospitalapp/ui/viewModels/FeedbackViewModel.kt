@@ -123,18 +123,6 @@ class FeedbackViewModel(
         }
     }
 
-    fun getAppointmentsWithoutFeedback(doctorId: Long) {
-        viewModelScope.launch {
-            pendingFeedbackUiState = BaseUiState.Loading
-            try {
-                val result = feedbackRepository.getAppointmentsWithoutFeedback(doctorId)
-                pendingFeedbackUiState = BaseUiState.Success(result)
-            } catch (e: Exception) {
-                pendingFeedbackUiState = BaseUiState.Error
-            }
-        }
-    }
-
     companion object {
         val Factory: ViewModelProvider.Factory = viewModelFactory {
             initializer {

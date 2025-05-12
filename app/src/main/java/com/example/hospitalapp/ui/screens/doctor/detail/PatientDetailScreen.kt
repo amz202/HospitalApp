@@ -94,19 +94,14 @@ fun PatientDetailScreen(
                                     .padding(16.dp)
                                     .fillMaxWidth()
                             ) {
-                                Text(
-                                    text = "${patient.fName} ${patient.lName}",
-                                    style = MaterialTheme.typography.titleLarge
-                                )
+
                                 Text("ID: ${patient.id}")
-                                Text("Gender: ${patient.gender}")
-                                Text("DOB: ${patient.dob}")
+
                                 Text("Blood Group: ${patient.bloodGroup}")
                                 if (!patient.allergies.isNullOrEmpty()) {
                                     Text("Allergies: ${patient.allergies}")
                                 }
-                                Text("Phone: ${patient.phoneNumber}")
-                                Text("Address: ${patient.address}")
+
                             }
                         }
                     }

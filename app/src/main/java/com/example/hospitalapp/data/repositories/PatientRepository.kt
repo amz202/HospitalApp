@@ -4,19 +4,17 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 import com.example.hospitalapp.data.local.dao.*
 import com.example.hospitalapp.data.local.entities.PatientDetailEntity
-import com.example.hospitalapp.data.local.entities.UserEntity
 import com.example.hospitalapp.data.local.extensions.*
 import com.example.hospitalapp.network.model.*
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
 import java.time.LocalDate
 import javax.inject.Inject
+import kotlin.toString
 
 interface PatientRepository {
     suspend fun getAllPatients(): List<PatientResponse>
     suspend fun getPatientById(id: Long): PatientResponse
     suspend fun createPatientDetails(userId: Long, request: PatientRequest): PatientResponse
-    suspend fun updatePatientDetails(userId: Long, request: PatientRequest): PatientResponse
+    suspend fun updatePatientDetails(userId: Long, request: PatientUpdateRequest): PatientResponse
     suspend fun deletePatient(id: Long)
     suspend fun getPatientAppointments(id: Long): List<AppointmentResponse>
 }
@@ -74,7 +72,8 @@ class PatientRepositoryImpl @Inject constructor(
         return getPatientById(userId)
     }
 
-    override suspend fun updatePatientDetails(userId: Long, request: PatientRequest): PatientResponse {
+    @RequiresApi(Build.VERSION_CODES.O)
+    override suspend fun updatePatientDetails(userId: Long, request: PatientUpdateRequest): PatientResponse {
         val user = userDao.getUserById(userId)
             ?: throw IllegalStateException("Patient not found")
 
@@ -87,9 +86,9 @@ class PatientRepositoryImpl @Inject constructor(
 
         val updatedDetails = existingDetails.copy(
             bloodGroup = request.bloodGroup,
-            allergies = request.allergies,
+            allergies = request.allergies?.split(",")?.map { it.trim() } ?: emptyList(),
             medicalHistory = request.medicalHistory,
-            updatedAt = currentDate.toString()
+            updatedAt = LocalDate.now().toString()
         )
 
         patientDetailDao.updatePatientDetail(updatedDetails)

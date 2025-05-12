@@ -40,7 +40,7 @@ fun AppNavigation(
 
     NavHost(
         navController = navController,
-        startDestination = LoginScreenNav
+        startDestination = SignupScreenNav
     ) {
         // Auth screens
         composable<LoginScreenNav> {

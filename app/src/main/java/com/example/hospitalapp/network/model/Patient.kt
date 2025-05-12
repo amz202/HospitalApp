@@ -37,7 +37,8 @@ data class PatientUpdateRequest(
     val emergencyContact: String?,
     val allergies: String?,
     val phoneNumber: String?,
-    val address: String
+    val address: String,
+    val medicalHistory: List<String>
 )
 @Serializable
 data class PatientMedicalInfoRequest(

@@ -81,10 +81,6 @@ fun DoctorAppointmentDetailScreen(
                             Spacer(modifier = Modifier.height(16.dp))
 
                             // Patient Info
-                            Text(
-                                text = "Patient: ${appointment.patient.fName} ${appointment.patient.lName}",
-                                style = MaterialTheme.typography.titleMedium
-                            )
                             Text("Patient ID: ${appointment.patient.id}")
 
                             Spacer(modifier = Modifier.height(16.dp))
@@ -164,46 +160,6 @@ fun DoctorAppointmentDetailScreen(
                             }
                         }
                     }
-                }
-
-                // Status Update Dialog
-                if (showStatusDialog) {
-                    AlertDialog(
-                        onDismissRequest = { showStatusDialog = false },
-                        title = { Text("Update Appointment Status") },
-                        text = {
-                            Column {
-                                AppointmentStatus.values().forEach { status ->
-                                    Row(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(vertical = 8.dp),
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
-                                        RadioButton(
-                                            selected = status == appointment.status,
-                                            onClick = {
-                                                viewModel.updateAppointmentStatus(
-                                                    appointmentId,
-                                                    status
-                                                )
-                                                showStatusDialog = false
-                                            }
-                                        )
-                                        Text(
-                                            text = status.name,
-                                            modifier = Modifier.padding(start = 8.dp)
-                                        )
-                                    }
-                                }
-                            }
-                        },
-                        confirmButton = {
-                            TextButton(onClick = { showStatusDialog = false }) {
-                                Text("Cancel")
-                            }
-                        }
-                    )
                 }
             }
             is BaseUiState.Error -> {

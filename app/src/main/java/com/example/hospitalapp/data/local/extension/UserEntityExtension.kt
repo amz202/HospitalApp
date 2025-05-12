@@ -63,9 +63,7 @@ suspend fun AppointmentEntity.toAppointmentResponse(
         type = type,
         notes = notes,
         reason = reason,
-        meetingLink = meetingLink,
-        createdAt = createdAt,
-        updatedAt = updatedAt
+        meetingLink = virtualMeetingUrl,
     )
 }
 

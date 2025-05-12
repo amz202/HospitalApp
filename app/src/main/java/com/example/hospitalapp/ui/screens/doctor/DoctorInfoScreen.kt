@@ -49,20 +49,15 @@ fun DoctorInfoScreen(
 
     // Load initial data
     LaunchedEffect(doctorId) {
-        viewModel.getDoctorDetails(doctorId)
+        viewModel.getDoctorById(doctorId)
     }
 
     // Update UI state when doctor data changes
     LaunchedEffect(doctorState) {
         if (doctorState is BaseUiState.Success) {
             val doctor = doctorState.data
-            fName = doctor.fName
-            lName = doctor.lName
-            email = doctor.email
-            phoneNumber = doctor.phoneNumber ?: ""
             specialization = doctor.specialization
             qualification = doctor.qualification
-            experienceYears = doctor.experience.toString()
             availableForEmergency = doctor.availableForEmergency
         }
     }
@@ -90,7 +85,7 @@ fun DoctorInfoScreen(
             }
             is BaseUiState.Error -> {
                 ErrorState(
-                    onRetry = { viewModel.getDoctorDetails(doctorId) }
+                    onRetry = { viewModel.getDoctorById(doctorId) }
                 )
             }
             is BaseUiState.Success -> {
@@ -245,7 +240,7 @@ fun DoctorInfoScreen(
                 Button(
                     onClick = {
                         showSaveDialog = false
-                        viewModel.updateDoctor(
+                        viewModel.updateDoctorDetails(
                             doctorId,
                             DoctorRequest(
                                 fName = fName,

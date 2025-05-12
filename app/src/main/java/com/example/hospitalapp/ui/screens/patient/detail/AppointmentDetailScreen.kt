@@ -141,10 +141,6 @@ fun AppointmentDetailScreen(
                             )
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
-                                text = "Dr. ${appointment.doctor.fName} ${appointment.doctor.lName}",
-                                style = MaterialTheme.typography.bodyLarge
-                            )
-                            Text(
                                 text = "Specialization: ${appointment.doctor.specialization}",
                                 style = MaterialTheme.typography.bodyMedium
                             )

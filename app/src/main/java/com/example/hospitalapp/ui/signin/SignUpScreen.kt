@@ -225,6 +225,7 @@ private fun UserFormContent(
                         password = password,
                         role = UserRole.valueOf(role)
                     )
+
                 },
                 modifier = Modifier
                     .fillMaxWidth()

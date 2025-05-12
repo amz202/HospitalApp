@@ -30,14 +30,6 @@ class UserPreferences(private val context: Context) {
     suspend fun saveUser(user: UserResponse) {
         context.dataStore.edit { preferences ->
             preferences[USER_ID_KEY] = user.id
-            preferences[USERNAME_KEY] = user.username
-            preferences[EMAIL_KEY] = user.email
-            preferences[FIRST_NAME_KEY] = user.fName.toString()
-            preferences[LAST_NAME_KEY] = user.lName.toString()
-            preferences[ROLE_KEY] = user.roles.firstOrNull() ?: ""
-            preferences[GENDER_KEY] = user.gender.toString()  // Use enum name
-            preferences[DOB_KEY] = user.dob.toString()
-            preferences[ADDRESS_KEY] = user.address ?: ""
         }
     }
 

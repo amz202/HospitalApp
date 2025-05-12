@@ -87,10 +87,6 @@ fun PatientDashboardScreen(
                                 .fillMaxWidth()
                         ) {
                             Text(
-                                text = "${patient.fName} ${patient.lName}",
-                                style = MaterialTheme.typography.headlineSmall
-                            )
-                            Text(
                                 text = "ID: ${patient.id}",
                                 style = MaterialTheme.typography.bodyMedium
                             )
@@ -106,10 +102,6 @@ fun PatientDashboardScreen(
                                             style = MaterialTheme.typography.bodyMedium
                                         )
                                     }
-                                    Text(
-                                        text = "Gender: ${patient.gender}",
-                                        style = MaterialTheme.typography.bodyMedium
-                                    )
                                 }
                                 Button(
                                     onClick = { showEmergencyDialog = true },

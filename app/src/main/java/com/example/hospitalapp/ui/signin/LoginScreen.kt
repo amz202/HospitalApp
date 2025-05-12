@@ -22,7 +22,7 @@ fun LoginScreen(
     var password by remember { mutableStateOf("") }
     var showError by remember { mutableStateOf(false) }
 
-    val loginState = userViewModel.loginState.value
+    val loginState = userViewModel.userUiState
 
     LaunchedEffect(loginState) {
         when (loginState) {
@@ -104,7 +104,7 @@ fun LoginScreen(
         Spacer(modifier = Modifier.height(24.dp))
 
         Button(
-            onClick = { userViewModel.login(username, password) },
+            onClick = { null },
             enabled = username.isNotBlank() && password.isNotBlank() &&
                     loginState !is BaseUiState.Loading,
             modifier = Modifier.fillMaxWidth()

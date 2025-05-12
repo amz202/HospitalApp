@@ -85,7 +85,7 @@ fun AppointmentsSection(
                                 ListItem(
                                     headlineContent = {
                                         Text(
-                                            text = "Dr. ${appointment.doctor.fName} ${appointment.doctor.lName}",
+                                            text = "${appointment.doctor.id}",
                                             style = MaterialTheme.typography.titleSmall
                                         )
                                     },

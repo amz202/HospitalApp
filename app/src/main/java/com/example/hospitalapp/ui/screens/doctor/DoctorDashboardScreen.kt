@@ -45,7 +45,7 @@ fun DoctorDashboardScreen(
 
     // Initialize required data
     LaunchedEffect(doctorId) {
-        doctorViewModel.getDoctorDetails(doctorId)
+        doctorViewModel.getDoctorById(doctorId)
         doctorViewModel.getDoctorPatients(doctorId)
     }
 
@@ -90,7 +90,7 @@ fun DoctorDashboardScreen(
             doctorState is BaseUiState.Error -> {
                 ErrorState(
                     onRetry = {
-                        doctorViewModel.getDoctorDetails(doctorId)
+                        doctorViewModel.getDoctorById(doctorId)
                         doctorViewModel.getDoctorPatients(doctorId)
                     }
                 )
@@ -129,7 +129,7 @@ private fun DoctorHeader(doctor: DoctorResponse) {
         title = {
             Column {
                 Text(
-                    text = "Dr. ${doctor.fName} ${doctor.lName}",
+                    text = "Dr. ${doctor.id}",
                     style = MaterialTheme.typography.titleLarge
                 )
                 Text(
@@ -204,12 +204,6 @@ private fun OverviewTab(
                     },
                     modifier = Modifier.weight(1f)
                 )
-                StatCard(
-                    icon = Icons.Default.MedicalServices,
-                    title = "Experience",
-                    value = "${doctor.experience} years",
-                    modifier = Modifier.weight(1f)
-                )
             }
         }
 
@@ -275,7 +269,7 @@ private fun PatientCard(
         ) {
             Column {
                 Text(
-                    text = "${patient.fName} ${patient.lName}",
+                    text = "${patient.id}",
                     style = MaterialTheme.typography.titleMedium
                 )
                 if (!patient.bloodGroup.isNullOrBlank()) {
@@ -374,10 +368,6 @@ private fun DoctorInfoCard(
             Spacer(modifier = Modifier.height(8.dp))
             Text(
                 text = "Specialization: ${doctor.specialization}",
-                style = MaterialTheme.typography.bodyMedium
-            )
-            Text(
-                text = "Experience: ${doctor.experience} years",
                 style = MaterialTheme.typography.bodyMedium
             )
             if (doctor.availableForEmergency) {

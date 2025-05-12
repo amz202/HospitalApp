@@ -1,6 +1,5 @@
 package com.example.hospitalapp.ui.viewModels
 
-import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -11,16 +10,12 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.hospitalapp.HospitalApplication
 import com.example.hospitalapp.data.repositories.PatientRepository
-import com.example.hospitalapp.network.model.PatientMedicalInfoRequest
 import com.example.hospitalapp.network.model.PatientRequest
 import com.example.hospitalapp.network.model.PatientResponse
 import com.example.hospitalapp.network.model.PatientUpdateRequest
-import com.example.hospitalapp.network.model.ReportResponse
-import com.example.hospitalapp.network.model.VitalsResponse
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import java.io.IOException
 
 class PatientViewModel(
     private val patientRepository: PatientRepository
@@ -79,7 +74,7 @@ class PatientViewModel(
         }
     }
 
-    fun updatePatientDetails(userId: Long, request: PatientRequest) {
+    fun updatePatientDetails(userId: Long, request: PatientUpdateRequest) {
         viewModelScope.launch {
             patientDetailsUiState = BaseUiState.Loading
             try {

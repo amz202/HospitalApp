@@ -110,18 +110,6 @@ class AppointmentViewModel(
         }
     }
 
-    fun updateAppointmentStatus(id: Long, status: AppointmentStatus) {
-        viewModelScope.launch {
-            appointmentDetailsUiState = BaseUiState.Loading
-            try {
-                val result = appointmentRepository.updateAppointmentStatus(id, status)
-                _selectedAppointment.value = result
-                appointmentDetailsUiState = BaseUiState.Success(result)
-            } catch (e: Exception) {
-                appointmentDetailsUiState = BaseUiState.Error
-            }
-        }
-    }
 
     companion object {
         val Factory: ViewModelProvider.Factory = viewModelFactory {
