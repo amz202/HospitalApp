@@ -29,21 +29,44 @@ class ReportViewModel(
     var patientReportsUiState: BaseUiState<List<ReportResponse>> by mutableStateOf(BaseUiState.Loading)
         private set
 
-    private val _reports = MutableStateFlow<List<ReportResponse>>(emptyList())
-    val reports: StateFlow<List<ReportResponse>> = _reports
-
     private val _selectedReport = MutableStateFlow<ReportResponse?>(null)
     val selectedReport: StateFlow<ReportResponse?> = _selectedReport
 
-    fun getAllReports() {
+    fun generateReport(
+        appointmentId: Long,
+        patientId: Long,
+        doctorId: Long,
+        title: String,
+        summary: String,
+        reportType: String,
+        vitalsId: Long? = null,
+        medicationIds: List<Long> = emptyList(),
+        feedbackId: Long? = null,
+        timePeriodStart: String? = null,
+        timePeriodEnd: String? = null
+    ) {
         viewModelScope.launch {
-            reportsUiState = BaseUiState.Loading
+            reportDetailsUiState = BaseUiState.Loading
             try {
-                val result = reportRepository.getAllReports()
-                _reports.value = result
-                reportsUiState = BaseUiState.Success(result)
+                val reportRequest = ReportRequest(
+                    title = title,
+                    patientId = patientId,
+                    doctorId = doctorId,
+                    summary = summary,
+                    reportType = reportType,
+                    appointmentId = appointmentId,
+                    vitalsId = vitalsId,
+                    medicationIds = medicationIds,
+                    feedbackId = feedbackId,
+                    timePeriodStart = timePeriodStart,
+                    timePeriodEnd = timePeriodEnd
+                )
+
+                val result = reportRepository.generateReport(reportRequest)
+                _selectedReport.value = result
+                reportDetailsUiState = BaseUiState.Success(result)
             } catch (e: Exception) {
-                reportsUiState = BaseUiState.Error
+                reportDetailsUiState = BaseUiState.Error
             }
         }
     }
@@ -61,7 +84,7 @@ class ReportViewModel(
         }
     }
 
-    fun getReportsByPatient(patientId: Long) {
+    fun getPatientReports(patientId: Long) {
         viewModelScope.launch {
             patientReportsUiState = BaseUiState.Loading
             try {
@@ -73,40 +96,14 @@ class ReportViewModel(
         }
     }
 
-    fun generateReport(appointmentId: Long) {
+    fun getAllReports() {
         viewModelScope.launch {
-            reportDetailsUiState = BaseUiState.Loading
+            reportsUiState = BaseUiState.Loading
             try {
-                val result = reportRepository.generateReport(appointmentId)
-                _selectedReport.value = result
-                reportDetailsUiState = BaseUiState.Success(result)
+                val result = reportRepository.getAllReports()
+                reportsUiState = BaseUiState.Success(result)
             } catch (e: Exception) {
-                reportDetailsUiState = BaseUiState.Error
-            }
-        }
-    }
-
-    fun updateReport(id: Long, report: ReportRequest) {
-        viewModelScope.launch {
-            reportDetailsUiState = BaseUiState.Loading
-            try {
-                val result = reportRepository.updateReport(id, report)
-                _selectedReport.value = result
-                reportDetailsUiState = BaseUiState.Success(result)
-            } catch (e: Exception) {
-                reportDetailsUiState = BaseUiState.Error
-            }
-        }
-    }
-
-    fun getReportsByPatientBetweenDates(patientId: Long, startDate: String, endDate: String) {
-        viewModelScope.launch {
-            patientReportsUiState = BaseUiState.Loading
-            try {
-                val result = reportRepository.getReportsByPatientBetweenDates(patientId, startDate, endDate)
-                patientReportsUiState = BaseUiState.Success(result)
-            } catch (e: Exception) {
-                patientReportsUiState = BaseUiState.Error
+                reportsUiState = BaseUiState.Error
             }
         }
     }

@@ -86,11 +86,23 @@ class FeedbackViewModel(
         }
     }
 
-    fun createFeedback(doctorId: Long, appointmentId: Long, feedback: FeedbackRequest) {
+
+    fun createFeedback(doctorId: Long, appointmentId: Long, patientId: Long, feedback: FeedbackRequest) {
         viewModelScope.launch {
             feedbackDetailsUiState = BaseUiState.Loading
             try {
-                val result = feedbackRepository.createFeedback(doctorId, appointmentId, feedback)
+                // Create a new FeedbackRequest with all required fields
+                val feedbackRequest = FeedbackRequest(
+                    comments = feedback.comments,
+                    diagnosis = feedback.diagnosis,
+                    recommendations = feedback.recommendations,
+                    nextSteps = feedback.nextSteps,
+                    doctorId = doctorId,
+                    patientId = patientId,
+                    appointmentId = appointmentId
+                )
+
+                val result = feedbackRepository.createFeedback(feedbackRequest)
                 _selectedFeedback.value = result
                 feedbackDetailsUiState = BaseUiState.Success(result)
             } catch (e: Exception) {
