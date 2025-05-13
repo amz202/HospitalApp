@@ -34,8 +34,8 @@ fun MedicationDetailScreen(
 ) {
     var selectedFilter by remember { mutableStateOf(MedicationFilter.ACTIVE) }
     val medicationsState = medicationViewModel.patientMedicationsUiState
-    val currentDateTime = LocalDateTime.parse("2025-05-12 17:47:49",
-        DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
+    val currentDateTime = LocalDateTime.now()
+
 
     Scaffold(
         topBar = {
@@ -157,10 +157,7 @@ fun MedicationDetailScreen(
                             ) { medication ->
                                 MedicationCard(
                                     medication = medication,
-                                    currentDateTime = currentDateTime,
-                                    onClick = {
-                                        navController.navigate("medication_details/${medication.id}")
-                                    }
+                                    currentDateTime = currentDateTime
                                 )
                             }
                         }
@@ -204,11 +201,9 @@ fun MedicationDetailScreen(
 private fun MedicationCard(
     medication: MedicationResponse,
     currentDateTime: LocalDateTime,
-    onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     ElevatedCard(
-        onClick = onClick,
         modifier = modifier.fillMaxWidth()
     ) {
         Column(
@@ -265,8 +260,7 @@ private fun MedicationCard(
             ) {
                 Text(
                     text = "Started: ${
-                        LocalDateTime.parse(medication.startDate)
-                            .format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+                        medication.startDate
                     }",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant

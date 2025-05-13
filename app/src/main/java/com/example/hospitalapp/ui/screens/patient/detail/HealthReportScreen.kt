@@ -17,6 +17,8 @@ import com.example.hospitalapp.ui.viewModels.*
 import com.example.hospitalapp.network.model.*
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import kotlin.text.compareTo
+import kotlin.text.format
 
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
@@ -30,9 +32,7 @@ fun HealthReportScreen(
     modifier: Modifier = Modifier
 ) {
     var showDateRangeDialog by remember { mutableStateOf(false) }
-    val currentDateTime = remember {
-        LocalDateTime.parse("2025-05-10 09:59:19", DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
-    }
+    val currentDateTime = LocalDateTime.now()
 
     LaunchedEffect(patientId) {
         vitalsViewModel.getVitalsById(patientId)
@@ -316,11 +316,19 @@ private fun MedicationsReportCard(medications: List<MedicationResponse>) {
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
+                val dateText = if (!medication.endDate.isNullOrEmpty()) {
+                    try {
+                        val endDate = LocalDateTime.parse(medication.endDate)
+                        "Until ${endDate.format(DateTimeFormatter.ofPattern("MMM dd"))}"
+                    } catch (e: Exception) {
+                        "End date unknown"
+                    }
+                } else {
+                    "Ongoing"
+                }
+
                 Text(
-                    text = "Until ${
-                        LocalDateTime.parse(medication.endDate)
-                            .format(DateTimeFormatter.ofPattern("MMM dd"))
-                    }",
+                    text = dateText,
                     style = MaterialTheme.typography.bodySmall
                 )
             }

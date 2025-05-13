@@ -21,7 +21,7 @@ interface VitalsRepository {
     suspend fun createVitals(vitals: VitalsRequest): VitalsResponse
 }
 
-class VitalsRepositoryImpl @Inject constructor(
+class VitalsRepositoryImpl (
     private val vitalsDao: VitalsDao,
     private val userDao: UserDao,
     private val patientDetailDao: PatientDetailDao

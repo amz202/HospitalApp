@@ -15,30 +15,36 @@ import com.example.hospitalapp.network.model.MedicationRequest
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import android.util.Log
+
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+
 
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddMedicationDialog(
     patientId: Long,
-    appointmentId: Long,
+    appointmentId: Long,  // This will be the selected appointment's ID
     onDismiss: () -> Unit,
     onAddMedication: (MedicationRequest) -> Unit
 ) {
-    // Form states
     var name by remember { mutableStateOf("") }
     var dosage by remember { mutableStateOf("") }
     var frequency by remember { mutableStateOf("") }
     var instructions by remember { mutableStateOf("") }
 
-    // Date states
-    val now = LocalDateTime.now()
-    var startDate by remember { mutableStateOf(now) }
+    val currentDateTime = LocalDateTime.now()
+
+
     var endDateEnabled by remember { mutableStateOf(false) }
-    var endDate by remember { mutableStateOf(now.plusDays(14)) } // Default 2 weeks
-
-
-    val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
     val scrollState = rememberScrollState()
 
     Dialog(onDismissRequest = onDismiss) {
@@ -87,10 +93,9 @@ fun AddMedicationDialog(
                     isError = frequency.isBlank()
                 )
 
-                // Start date field
-                // In a full implementation, use a DatePicker
+                // Start date field (display only)
                 Text(
-                    text = "Start Date: ${startDate.format(formatter)}",
+                    text = "Start Date: $currentDateTime",
                     style = MaterialTheme.typography.bodyLarge
                 )
 
@@ -106,11 +111,10 @@ fun AddMedicationDialog(
                     Text("Set End Date")
                 }
 
-                // Only show end date if enabled
+                // Only show end date if enabled (display only)
                 if (endDateEnabled) {
-                    // In a full implementation, use a DatePicker
                     Text(
-                        text = "End Date: ${endDate.format(formatter)}",
+                        text = "End Date: $currentDateTime",  // Using same date for simplicity
                         style = MaterialTheme.typography.bodyLarge
                     )
                 }
@@ -137,18 +141,24 @@ fun AddMedicationDialog(
 
                     Button(
                         onClick = {
-                            // Create medication request and pass to callback
-                            val request = MedicationRequest(
-                                patientId = patientId,
-                                appointmentId = appointmentId ?: 0, // Use 0 as default if no appointment
-                                name = name,
-                                dosage = dosage,
-                                frequency = frequency,
-                                startDate = startDate.format(formatter),
-                                endDate = if (endDateEnabled) endDate.format(formatter) else null,
-                                instructions = if (instructions.isNotBlank()) instructions else null
-                            )
-                            onAddMedication(request)
+                            try {
+                                Log.d("AddMedicationDialog", "Creating medication with appointmentId: $appointmentId")
+
+                                // Create medication request with proper date format and the selected appointment ID
+                                val request = MedicationRequest(
+                                    patientId = patientId,
+                                    appointmentId = appointmentId,
+                                    name = name,
+                                    dosage = dosage,
+                                    frequency = frequency,
+                                    startDate = currentDateTime.toString(),  // Full date-time format
+                                    endDate = (if (endDateEnabled) currentDateTime else null).toString(),
+                                    instructions = if (instructions.isNotBlank()) instructions else null
+                                )
+                                onAddMedication(request)
+                            } catch (e: Exception) {
+                                Log.e("AddMedicationDialog", "Error creating medication: ${e.message}", e)
+                            }
                         },
                         enabled = name.isNotBlank() && dosage.isNotBlank() && frequency.isNotBlank()
                     ) {

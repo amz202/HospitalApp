@@ -24,6 +24,8 @@ import com.example.hospitalapp.ui.screens.patient.MedicationsSection
 import com.example.hospitalapp.ui.screens.patient.VitalsSection
 import com.example.hospitalapp.ui.viewModels.*
 
+// In your PatientDetailScreen.kt
+
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -43,14 +45,14 @@ fun PatientDetailScreen(
     var showAddMedicationDialog by remember { mutableStateOf(false) }
     var selectedAppointment by remember { mutableStateOf<AppointmentResponse?>(null) }
 
+    // Current date time from your system
+    val currentDateTime = "2025-05-13 11:37:08"
 
     // Monitor medication creation status
     val createMedicationState = medicationViewModel.createMedicationUiState
-
-    // Show a snackbar message when medication is created
     val snackbarHostState = remember { SnackbarHostState() }
 
-    // Effect to show snackbar on successful creation
+    // Effect to show snackbar messages
     LaunchedEffect(createMedicationState) {
         when (createMedicationState) {
             is BaseUiState.Success -> {
@@ -95,8 +97,8 @@ fun PatientDetailScreen(
                     }
                 },
                 actions = {
-                    // New medication button
-                    IconButton(onClick = { showAddMedicationDialog = true }) {
+                    // Add medication button - shows appointment selector first
+                    IconButton(onClick = { showAppointmentSelector = true }) {
                         Icon(Icons.Default.Add, contentDescription = "Add Medication")
                     }
                 }
@@ -104,6 +106,45 @@ fun PatientDetailScreen(
         },
         snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { padding ->
+        // First, show appointment selector when the Add button is clicked
+        if (showAppointmentSelector) {
+            AppointmentSelectionDialog(
+                patientId = patientId,
+                appointmentViewModel = appointmentViewModel,
+                onSelect = { appointment ->
+                    selectedAppointment = appointment
+                    showAppointmentSelector = false
+                    showAddMedicationDialog = true  // Show medication dialog after selection
+                },
+                onDismiss = {
+                    showAppointmentSelector = false
+                }
+            )
+        }
+
+        // Then show medication dialog after appointment is selected
+        if (showAddMedicationDialog && selectedAppointment != null) {
+            AddMedicationDialog(
+                patientId = patientId,
+                appointmentId = selectedAppointment!!.id,  // Use the selected appointment ID
+                onDismiss = {
+                    showAddMedicationDialog = false
+                    selectedAppointment = null  // Reset selected appointment
+                },
+                onAddMedication = { medicationRequest ->
+                    // Create a new request with the correct date format
+                    val updatedRequest = medicationRequest.copy(
+                        startDate = currentDateTime,
+                        endDate = medicationRequest.endDate?.let { currentDateTime }
+                    )
+
+                    medicationViewModel.createMedication(updatedRequest)
+                    showAddMedicationDialog = false
+                    selectedAppointment = null  // Reset selected appointment
+                }
+            )
+        }
+
         when (patientState) {
             is BaseUiState.Loading -> {
                 Box(
@@ -117,36 +158,6 @@ fun PatientDetailScreen(
             }
             is BaseUiState.Success -> {
                 val patient = patientState.data
-
-                // Show appointment selector dialog
-                if (showAppointmentSelector) {
-                    AppointmentSelectionDialog(
-                        patientId = patientId,
-                        appointmentViewModel = appointmentViewModel,
-                        onSelect = { appointment ->
-                            selectedAppointment = appointment
-                            showAppointmentSelector = false
-                            showAddMedicationDialog = true
-                        },
-                        onDismiss = {
-                            showAppointmentSelector = false
-                        }
-                    )
-                }
-
-                // Show add medication dialog if requested
-                if (showAddMedicationDialog) {
-                    AddMedicationDialog(
-                        patientId = patientId,
-                        appointmentId = selectedAppointment?.id ?: 1,
-                        onDismiss = { showAddMedicationDialog = false },
-                        onAddMedication = { medicationRequest ->
-                            medicationViewModel.createMedication(medicationRequest)
-                            showAddMedicationDialog = false
-                        }
-                    )
-                }
-
                 PatientDetailContent(
                     patient = patient,
                     patientId = patientId,

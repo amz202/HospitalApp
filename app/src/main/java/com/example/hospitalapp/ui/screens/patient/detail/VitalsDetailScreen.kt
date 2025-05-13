@@ -33,9 +33,8 @@ fun VitalsDetailScreen(
     val vitalsState = vitalsViewModel.patientVitalsUiState
     var showFilterDialog by remember { mutableStateOf(false) }
     var selectedTimeRange by remember { mutableStateOf(TimeRange.ALL) }
-    val currentDateTime = remember {
-        LocalDateTime.parse("2025-05-10 08:37:16", DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
-    }
+    val currentDateTime = LocalDateTime.now()
+
 
     LaunchedEffect(patientId) {
         vitalsViewModel.getVitalsById(patientId)

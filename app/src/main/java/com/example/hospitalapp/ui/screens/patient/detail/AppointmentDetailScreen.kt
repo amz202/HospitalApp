@@ -30,11 +30,8 @@ fun AppointmentDetailScreen(
     navController: NavController,
     modifier: Modifier = Modifier
 ) {
-    val currentDateTime = LocalDateTime.parse(
-        "2025-05-12 17:54:36",
-        DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
-    )
-    val currentUser = "amz202"
+    val currentDateTime = LocalDateTime.now()
+
 
     var showCancelDialog by remember { mutableStateOf(false) }
     val appointmentState = appointmentViewModel.appointmentDetailsUiState

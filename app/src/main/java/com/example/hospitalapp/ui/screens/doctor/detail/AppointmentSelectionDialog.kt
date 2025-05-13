@@ -15,6 +15,15 @@ import androidx.compose.ui.window.Dialog
 import com.example.hospitalapp.network.model.AppointmentResponse
 import com.example.hospitalapp.ui.viewModels.AppointmentViewModel
 import com.example.hospitalapp.ui.viewModels.BaseUiState
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Error
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
@@ -64,10 +73,22 @@ fun AppointmentSelectionDialog(
                         val appointments = appointmentsState.data
 
                         if (appointments.isEmpty()) {
-                            Text(
-                                text = "No appointments found. Please create an appointment first.",
-                                style = MaterialTheme.typography.bodyLarge
-                            )
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 24.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Text(
+                                    text = "No appointments found for this patient",
+                                    style = MaterialTheme.typography.bodyLarge
+                                )
+                                Text(
+                                    text = "Please create an appointment first",
+                                    style = MaterialTheme.typography.bodyMedium
+                                )
+                            }
                         } else {
                             LazyColumn(
                                 modifier = Modifier
@@ -104,6 +125,12 @@ fun AppointmentSelectionDialog(
                                                     style = MaterialTheme.typography.bodySmall
                                                 )
                                             }
+                                            appointment.reason?.let { reason ->
+                                                Text(
+                                                    text = "Reason: $reason",
+                                                    style = MaterialTheme.typography.bodySmall
+                                                )
+                                            }
                                         }
                                     }
                                 }
@@ -111,10 +138,28 @@ fun AppointmentSelectionDialog(
                         }
                     }
                     is BaseUiState.Error -> {
-                        Text(
-                            text = "Failed to load appointments",
-                            color = MaterialTheme.colorScheme.error
-                        )
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 24.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Error,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.error
+                            )
+                            Text(
+                                text = "Failed to load appointments",
+                                color = MaterialTheme.colorScheme.error
+                            )
+                            Button(onClick = {
+                                appointmentViewModel.getPatientAppointments(patientId)
+                            }) {
+                                Text("Retry")
+                            }
+                        }
                     }
                 }
 
