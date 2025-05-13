@@ -25,7 +25,12 @@ data class PatientResponse(
     val accountCreationDate: String,
     val bloodGroup: String?,
     val allergies: List<String>,
-    val medicalHistory: List<String>
+    val medicalHistory: List<String>,
+    val fName: String,
+    val lName: String,
+    val phoneNumber: String?,
+    val gender: String,
+    val email: String,
 )
 
 

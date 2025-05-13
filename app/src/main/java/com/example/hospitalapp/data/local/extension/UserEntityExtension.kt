@@ -245,7 +245,12 @@ fun UserEntity.toPatientResponse(details: PatientDetailEntity?): PatientResponse
         accountCreationDate = accountCreationDate,
         bloodGroup = details?.bloodGroup,
         allergies = details?.allergies ?: emptyList(),
-        medicalHistory = details?.medicalHistory ?: emptyList()
+        medicalHistory = details?.medicalHistory ?: emptyList(),
+        fName = details?.fName ?: "",
+        lName = details?.lName ?: "",
+        phoneNumber = details?.phoneNumber,
+        gender = details?.gender ?: "",
+        email = details?.email ?: "",
     )
 }
 

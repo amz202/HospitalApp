@@ -1,5 +1,6 @@
 package com.example.hospitalapp.ui.viewModels
 
+import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -44,12 +45,20 @@ class MedicationViewModel(
             try {
                 val result = medicationRepository.createMedication(medicationRequest)
                 createMedicationUiState = BaseUiState.Success(result)
-                // Refresh the medications list
-                getMedications()
+
+                // Refresh patient medications after creating a new one
+                getPatientMedications(medicationRequest.patientId)
             } catch (e: Exception) {
+                // Log the exception for debugging
+                Log.e("MedicationViewModel", "Error creating medication with request: ", e)
                 createMedicationUiState = BaseUiState.Error
             }
         }
+    }
+
+    // Reset creation state to avoid showing success/error messages repeatedly
+    fun resetCreateMedicationState() {
+        createMedicationUiState = BaseUiState.Success(null)
     }
     fun getMedications() {
         viewModelScope.launch {

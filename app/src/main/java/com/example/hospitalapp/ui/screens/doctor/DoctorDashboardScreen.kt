@@ -129,7 +129,7 @@ private fun DoctorHeader(doctor: DoctorResponse) {
         title = {
             Column {
                 Text(
-                    text = "Dr. ${doctor.id}",
+                    text = "Dr. ${doctor.fName} ${doctor.lName}",
                     style = MaterialTheme.typography.titleLarge
                 )
                 Text(
