@@ -1,5 +1,6 @@
 package com.example.hospitalapp.ui.screens.patient.detail
 
+import android.content.Context
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.*
@@ -12,6 +13,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
+import android.content.Intent
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.hospitalapp.ui.viewModels.*
 import com.example.hospitalapp.network.model.*
@@ -19,6 +29,11 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import kotlin.text.compareTo
 import kotlin.text.format
+import com.example.hospitalapp.ui.viewModels.*
+import com.example.hospitalapp.network.model.*
+import kotlin.text.compareTo
+import kotlin.text.format
+import android.widget.Toast
 
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
@@ -29,16 +44,25 @@ fun HealthReportScreen(
     medicationViewModel: MedicationViewModel,
     appointmentViewModel: AppointmentViewModel,
     navController: NavController,
+    patientViewModel: PatientViewModel,
     modifier: Modifier = Modifier
 ) {
     var showDateRangeDialog by remember { mutableStateOf(false) }
     val currentDateTime = LocalDateTime.now()
+    val context = LocalContext.current
 
+    // Get patient information
     LaunchedEffect(patientId) {
         vitalsViewModel.getVitalsByPatient(patientId)
         medicationViewModel.getPatientMedications(patientId)
         appointmentViewModel.getPatientAppointments(patientId)
+        patientViewModel.getPatientById(patientId)
     }
+
+    val vitalsState = vitalsViewModel.patientVitalsUiState
+    val medicationsState = medicationViewModel.patientMedicationsUiState
+    val appointmentsState = appointmentViewModel.appointmentsUiState
+    val patientState = patientViewModel.patientDetailsUiState
 
     Scaffold(
         topBar = {
@@ -50,7 +74,16 @@ fun HealthReportScreen(
                     }
                 },
                 actions = {
-                    IconButton(onClick = { /* TODO: Share report */ }) {
+                    IconButton(onClick = {
+                        shareHealthReport(
+                            context = context,
+                            currentDateTime = currentDateTime,
+                            vitalsState = vitalsState,
+                            medicationsState = medicationsState,
+                            appointmentsState = appointmentsState,
+                            patientState = patientState
+                        )
+                    }) {
                         Icon(Icons.Default.Share, contentDescription = "Share")
                     }
                 }
@@ -82,15 +115,18 @@ fun HealthReportScreen(
                                 Text("No vitals data available")
                             }
                         }
+
                         is BaseUiState.Loading -> {
                             CircularProgressIndicator()
                         }
+
                         is BaseUiState.Error -> {
                             Text(
                                 "Error loading vitals data",
                                 color = MaterialTheme.colorScheme.error
                             )
                         }
+
                         else -> Unit
                     }
                 }
@@ -111,15 +147,18 @@ fun HealthReportScreen(
                                 Text("No active medications")
                             }
                         }
+
                         is BaseUiState.Loading -> {
                             CircularProgressIndicator()
                         }
+
                         is BaseUiState.Error -> {
                             Text(
                                 "Error loading medications data",
                                 color = MaterialTheme.colorScheme.error
                             )
                         }
+
                         else -> Unit
                     }
                 }
@@ -143,15 +182,18 @@ fun HealthReportScreen(
                                 Text("No upcoming appointments")
                             }
                         }
+
                         is BaseUiState.Loading -> {
                             CircularProgressIndicator()
                         }
+
                         is BaseUiState.Error -> {
                             Text(
                                 "Error loading appointments data",
                                 color = MaterialTheme.colorScheme.error
                             )
                         }
+
                         else -> Unit
                     }
                 }
@@ -206,9 +248,11 @@ private fun ReportHeaderCard(
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = "Generated on: ${currentDateTime.format(
-                    DateTimeFormatter.ofPattern("MMM dd, yyyy HH:mm")
-                )}",
+                text = "Generated on: ${
+                    currentDateTime.format(
+                        DateTimeFormatter.ofPattern("MMM dd, yyyy HH:mm")
+                    )
+                }",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
             )
@@ -260,7 +304,10 @@ private fun VitalsReportCard(vitals: VitalsResponse) {
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             VitalItem("Heart Rate", "${vitals.heartRate ?: "--"} bpm")
-            VitalItem("Blood Pressure", "${vitals.systolicPressure ?: "--"}/${vitals.diastolicPressure ?: "--"}")
+            VitalItem(
+                "Blood Pressure",
+                "${vitals.systolicPressure ?: "--"}/${vitals.diastolicPressure ?: "--"}"
+            )
         }
         Spacer(modifier = Modifier.height(8.dp))
         Row(
@@ -404,5 +451,187 @@ private fun HealthSummaryCard(
                 style = MaterialTheme.typography.bodyMedium
             )
         }
+    }
+}
+
+@RequiresApi(Build.VERSION_CODES.O)
+private fun shareHealthReport(
+    context: Context,
+    currentDateTime: LocalDateTime,
+    vitalsState: BaseUiState<List<VitalsResponse>>,
+    medicationsState: BaseUiState<List<MedicationResponse>>,
+    appointmentsState: BaseUiState<List<AppointmentResponse>>,
+    patientState: BaseUiState<PatientResponse>
+) {
+    val emailIntent = Intent(Intent.ACTION_SEND).apply {
+        type = "message/rfc822"
+
+        // Format subject line with patient name if available
+        val patientName = if (patientState is BaseUiState.Success) {
+            "${patientState.data.fName} ${patientState.data.lName}"
+        } else {
+            "Patient"
+        }
+
+        putExtra(
+            Intent.EXTRA_SUBJECT, "Health Report for $patientName - ${
+                currentDateTime.format(DateTimeFormatter.ofPattern("MMM dd, yyyy"))
+            }"
+        )
+
+        // Build the email body using a StringBuilder for better performance
+        val emailBody = StringBuilder().apply {
+            // Header
+            append("HEALTH REPORT SUMMARY\n")
+            append("Generated on: ${currentDateTime.format(DateTimeFormatter.ofPattern("MMMM dd, yyyy HH:mm"))}\n\n")
+
+            // Patient Info
+            if (patientState is BaseUiState.Success) {
+                val patient = patientState.data
+                append("PATIENT INFORMATION\n")
+                append("Name: ${patient.fName} ${patient.lName}\n")
+                append("\n")
+            }
+
+            // Vitals
+            append("VITALS OVERVIEW\n")
+            if (vitalsState is BaseUiState.Success) {
+                val latestVitals = vitalsState.data.maxByOrNull { it.recordedAt }
+                if (latestVitals != null) {
+                    append(
+                        "Latest readings recorded on: ${
+                            LocalDateTime.parse(latestVitals.recordedAt)
+                                .format(DateTimeFormatter.ofPattern("MMM dd, yyyy HH:mm"))
+                        }\n"
+                    )
+                    append("Heart Rate: ${latestVitals.heartRate ?: "N/A"} bpm\n")
+                    append("Blood Pressure: ${latestVitals.systolicPressure ?: "N/A"}/${latestVitals.diastolicPressure ?: "N/A"} mmHg\n")
+                    append("Temperature: ${latestVitals.temperature?.let { "%.1f".format(it) } ?: "N/A"}°C\n")
+                    append(
+                        "Oxygen Saturation: ${
+                            latestVitals.oxygenSaturation?.let {
+                                "%.1f".format(
+                                    it
+                                )
+                            } ?: "N/A"
+                        }%\n")
+                    if (latestVitals.respiratoryRate != null) {
+                        append("Respiratory Rate: ${latestVitals.respiratoryRate} breaths/min\n")
+                    }
+                    if (latestVitals.bloodSugar != null) {
+                        append("Blood Sugar: ${latestVitals.bloodSugar} mg/dL\n")
+                    }
+
+                    if (latestVitals.critical) {
+                        append("\n⚠️ CRITICAL VALUES DETECTED ⚠️\n")
+                        if (!latestVitals.criticalNotes.isNullOrBlank()) {
+                            append("Notes: ${latestVitals.criticalNotes}\n")
+                        }
+                    }
+                } else {
+                    append("No vitals data available\n")
+                }
+            } else {
+                append("Vitals data unavailable\n")
+            }
+            append("\n")
+
+            // Medications
+            append("ACTIVE MEDICATIONS\n")
+            if (medicationsState is BaseUiState.Success) {
+                val activeMedications = medicationsState.data.filter { it.active }
+                if (activeMedications.isNotEmpty()) {
+                    activeMedications.forEachIndexed { index, medication ->
+                        val endDateText = if (!medication.endDate.isNullOrEmpty()) {
+                            try {
+                                val endDate = LocalDateTime.parse(medication.endDate)
+                                "Until ${endDate.format(DateTimeFormatter.ofPattern("MMM dd, yyyy"))}"
+                            } catch (e: Exception) {
+                                "End date unknown"
+                            }
+                        } else {
+                            "Ongoing"
+                        }
+
+                        append("${index + 1}. ${medication.name} - ${medication.dosage}, ${medication.frequency}\n")
+                        append("   ${endDateText}\n")
+                        if (!medication.instructions.isNullOrBlank()) {
+                            append("   Instructions: ${medication.instructions}\n")
+                        }
+                    }
+                } else {
+                    append("No active medications\n")
+                }
+            } else {
+                append("Medication data unavailable\n")
+            }
+            append("\n")
+
+            // Upcoming Appointments
+            append("UPCOMING APPOINTMENTS\n")
+            if (appointmentsState is BaseUiState.Success) {
+                val upcomingAppointments = appointmentsState.data
+                    .filter { LocalDateTime.parse(it.scheduledTime).isAfter(currentDateTime) }
+                    .sortedBy { it.scheduledTime }
+
+                if (upcomingAppointments.isNotEmpty()) {
+                    upcomingAppointments.forEachIndexed { index, appointment ->
+                        val appointmentDate = LocalDateTime.parse(appointment.scheduledTime)
+                        val appointmentType = when (appointment.type.uppercase()) {
+                            "IN_PERSON" -> "In-Person"
+                            "VIDEO_CONSULTATION" -> "Video Consultation"
+                            else -> appointment.type
+                        }
+
+                        append("${index + 1}. ${appointmentDate.format(DateTimeFormatter.ofPattern("MMM dd, yyyy HH:mm"))} - $appointmentType\n")
+                        if (!appointment.notes.isNullOrBlank()) {
+                            append("   Notes: ${appointment.notes}\n")
+                        }
+                    }
+                } else {
+                    append("No upcoming appointments\n")
+                }
+            } else {
+                append("Appointment data unavailable\n")
+            }
+            append("\n")
+
+            // Health Summary
+            append("HEALTH SUMMARY\n")
+            if (vitalsState is BaseUiState.Success) {
+                val criticalVitals = vitalsState.data.filter { it.critical }
+                if (criticalVitals.isNotEmpty()) {
+                    append("⚠️ ${criticalVitals.size} vital measurements need attention\n")
+                }
+            }
+
+            if (medicationsState is BaseUiState.Success) {
+                val activeMedications = medicationsState.data.filter { it.active }
+                append("💊 Currently taking ${activeMedications.size} medications\n")
+            }
+
+            if (appointmentsState is BaseUiState.Success) {
+                val upcomingAppointments = appointmentsState.data.filter {
+                    LocalDateTime.parse(it.scheduledTime).isAfter(currentDateTime)
+                }
+                append("📅 ${upcomingAppointments.size} upcoming appointments\n")
+            }
+
+            // Footer
+            append("\n\n")
+            append("This report is generated automatically from the Hospital App.")
+            append("\n\n")
+            append("CONFIDENTIAL MEDICAL INFORMATION")
+            append("\nThis email contains confidential medical information and is intended only for the recipient.")
+        }
+
+        putExtra(Intent.EXTRA_TEXT, emailBody.toString())
+    }
+
+    // Launch email chooser
+    try {
+        context.startActivity(Intent.createChooser(emailIntent, "Send Health Report via..."))
+    } catch (ex: android.content.ActivityNotFoundException) {
+        Toast.makeText(context, "No email apps installed.", Toast.LENGTH_SHORT).show()
     }
 }

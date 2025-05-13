@@ -191,6 +191,7 @@ fun AppNavigation(
                 medicationViewModel = medicationViewModel,
                 appointmentViewModel = appointmentViewModel,
                 navController = navController,
+                patientViewModel
             )
         }
 
