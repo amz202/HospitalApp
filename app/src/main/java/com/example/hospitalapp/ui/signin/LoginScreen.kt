@@ -15,29 +15,26 @@ import com.example.hospitalapp.ui.viewModels.UserViewModel
 fun LoginScreen(
     userViewModel: UserViewModel,
     onSignUpClick: () -> Unit,
-    onLoginSuccess: (role: String) -> Unit, // Change to accept a single role string
+    onLoginSuccess: (role: String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-    var showError by remember { mutableStateOf(false) }
 
-    val loginState = userViewModel.userUiState
+    // Collect error message
+    val errorMessage by userViewModel.errorMessage.collectAsState()
 
+    // Observe login state
+    val loginState = userViewModel.loginState
+
+    // Show error status
+    val showError = loginState is BaseUiState.Error ||
+            (errorMessage != null && errorMessage?.contains("Invalid username or password") == true)
+
+    // Handle successful login
     LaunchedEffect(loginState) {
-        when (loginState) {
-            is BaseUiState.Success -> {
-                loginState.data?.let { response ->
-                    showError = false
-                    onLoginSuccess(response.role)  // Pass single role
-                }
-            }
-            is BaseUiState.Error -> {
-                showError = true
-            }
-            else -> {
-                showError = false
-            }
+        if (loginState is BaseUiState.Success && loginState.data != null) {
+            onLoginSuccess(loginState.data.role)
         }
     }
 
@@ -65,10 +62,7 @@ fun LoginScreen(
 
         OutlinedTextField(
             value = username,
-            onValueChange = {
-                username = it
-                showError = false
-            },
+            onValueChange = { username = it },
             label = { Text("Username") },
             singleLine = true,
             isError = showError,
@@ -80,10 +74,7 @@ fun LoginScreen(
 
         OutlinedTextField(
             value = password,
-            onValueChange = {
-                password = it
-                showError = false
-            },
+            onValueChange = { password = it },
             label = { Text("Password") },
             visualTransformation = PasswordVisualTransformation(),
             singleLine = true,
@@ -95,7 +86,7 @@ fun LoginScreen(
         if (showError) {
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "Invalid username or password",
+                text = errorMessage ?: "Invalid username or password",
                 color = MaterialTheme.colorScheme.error,
                 style = MaterialTheme.typography.bodySmall
             )
@@ -104,7 +95,9 @@ fun LoginScreen(
         Spacer(modifier = Modifier.height(24.dp))
 
         Button(
-            onClick = { null },
+            onClick = {
+                userViewModel.login(username, password)
+            },
             enabled = username.isNotBlank() && password.isNotBlank() &&
                     loginState !is BaseUiState.Loading,
             modifier = Modifier.fillMaxWidth()

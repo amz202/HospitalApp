@@ -10,6 +10,7 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.hospitalapp.HospitalApplication
 import com.example.hospitalapp.data.repositories.MedicationRepository
+import com.example.hospitalapp.network.model.MedicationRequest
 import com.example.hospitalapp.network.model.MedicationResponse
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -34,6 +35,22 @@ class MedicationViewModel(
     private val _selectedMedication = MutableStateFlow<MedicationResponse?>(null)
     val selectedMedication: StateFlow<MedicationResponse?> = _selectedMedication
 
+    var createMedicationUiState: BaseUiState<MedicationResponse?> by mutableStateOf(BaseUiState.Success(null))
+        private set
+
+    fun createMedication(medicationRequest: MedicationRequest) {
+        viewModelScope.launch {
+            createMedicationUiState = BaseUiState.Loading
+            try {
+                val result = medicationRepository.createMedication(medicationRequest)
+                createMedicationUiState = BaseUiState.Success(result)
+                // Refresh the medications list
+                getMedications()
+            } catch (e: Exception) {
+                createMedicationUiState = BaseUiState.Error
+            }
+        }
+    }
     fun getMedications() {
         viewModelScope.launch {
             medicationsUiState = BaseUiState.Loading

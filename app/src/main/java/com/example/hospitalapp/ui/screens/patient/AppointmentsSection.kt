@@ -20,6 +20,7 @@ import com.example.hospitalapp.network.model.AppointmentStatus
 import com.example.hospitalapp.network.model.AppointmentType
 import com.example.hospitalapp.ui.navigation.AppointmentBookingScreenNav
 import com.example.hospitalapp.ui.navigation.AppointmentDetailNav
+import com.example.hospitalapp.ui.navigation.DoctorSelectionNav
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
@@ -52,8 +53,7 @@ fun AppointmentsSection(
                 )
                 TextButton(
                     onClick = {
-                        // Navigate to book appointment
-                        navController.navigate("book_appointment/$patientId")
+                        navController.navigate(DoctorSelectionNav(patientId))
                     }
                 ) {
                     Text("Book New")
@@ -130,7 +130,7 @@ fun AppointmentsSection(
                                         )
                                     },
                                     modifier = Modifier.clickable {
-                                        navController.navigate("appointment_detail/${appointment.id}")
+                                        navController.navigate(AppointmentBookingScreenNav(patientId= patientId, doctorId = appointment.doctor.id))
                                     }
                                 )
                                 Divider(modifier = Modifier.padding(vertical = 8.dp))

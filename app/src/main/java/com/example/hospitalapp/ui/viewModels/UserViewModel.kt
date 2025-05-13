@@ -13,9 +13,12 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.hospitalapp.HospitalApplication
+import com.example.hospitalapp.data.UserData
+import com.example.hospitalapp.data.UserManager
 import com.example.hospitalapp.data.datastore.UserPreferences
 import com.example.hospitalapp.data.repositories.UserRepository
 import com.example.hospitalapp.network.model.CreateUserRequest
+import com.example.hospitalapp.network.model.LoginRequest
 import com.example.hospitalapp.network.model.LoginResponse
 import com.example.hospitalapp.network.model.SignupRequest
 import com.example.hospitalapp.network.model.UserResponse
@@ -37,6 +40,9 @@ class UserViewModel(
         private set
 
     var createUserUiState: BaseUiState<Long?> by mutableStateOf(BaseUiState.Success(null))
+
+    var loginState: BaseUiState<LoginResponse?> by mutableStateOf(BaseUiState.Success(null))
+        private set
 
     private val _currentUser = MutableStateFlow<UserResponse?>(null)
     val currentUser: StateFlow<UserResponse?> = _currentUser
@@ -118,6 +124,59 @@ class UserViewModel(
                 }
             } catch (e: Exception) {
                 _errorMessage.value = e.message ?: "Error deleting user"
+            }
+        }
+    }
+    init {
+        // Check if user is already logged in
+        checkLoginStatus()
+    }
+
+    private fun checkLoginStatus() {
+        viewModelScope.launch {
+            try {
+                // We'll use the UserManager to check if a user is logged in
+                UserManager.currentUser?.let { userData ->
+                    // User is logged in, fetch full details
+                    getUserById(userData.id)
+                }
+            } catch (e: Exception) {
+                _errorMessage.value = e.message ?: "Error checking login status"
+            }
+        }
+    }
+
+    fun login(username: String, password: String) {
+        viewModelScope.launch {
+            loginState = BaseUiState.Loading
+            try {
+                val loginRequest = LoginRequest(username = username, password = password)
+                val response = userRepository.login(loginRequest)
+
+                // Update UserManager with the current user data
+                val user = userRepository.getUserById(response.userId)
+                UserManager.updateUser(
+                    UserData(
+                        id = user.id,
+                        email = "",
+                        fName = "",
+                        lName = "",
+                        phoneNumber = "",
+                        dob ="",
+                        role = user.role
+                    )
+                )
+
+                // Update state
+                _currentUser.value = user
+                userUiState = BaseUiState.Success(user)
+                loginState = BaseUiState.Success(response)
+            } catch (e: IllegalStateException) {
+                _errorMessage.value = "Invalid username or password"
+                loginState = BaseUiState.Error
+            } catch (e: Exception) {
+                _errorMessage.value = e.message ?: "Login failed"
+                loginState = BaseUiState.Error
             }
         }
     }

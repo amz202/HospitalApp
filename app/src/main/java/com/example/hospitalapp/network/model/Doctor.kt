@@ -6,6 +6,8 @@ import kotlinx.serialization.Serializable
 data class DoctorResponse(
     val id: Long,
     val role: String,
+    val fName: String,
+    val lName: String,
     val accountCreationDate: String,
     val specialization: String,
     val licenseNumber: String,

@@ -9,14 +9,17 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import com.example.hospitalapp.data.datastore.UserPreferences
 import com.example.hospitalapp.data.local.dao.UserDao
 import com.example.hospitalapp.data.local.entities.UserEntity
 import com.example.hospitalapp.data.local.extensions.toUserResponse
 import com.example.hospitalapp.network.model.CreateUserRequest
+import com.example.hospitalapp.network.model.LoginRequest
 import com.example.hospitalapp.network.model.LoginResponse
 import com.example.hospitalapp.network.model.SignupRequest
 import com.example.hospitalapp.network.model.UserResponse
 import com.example.hospitalapp.network.model.UserRole
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -32,9 +35,12 @@ interface UserRepository {
     suspend fun deleteUser(id: Long)
     suspend fun getUsersByRole(role: UserRole): List<UserResponse>
     suspend fun getLatestUserByRole(role: UserRole): UserResponse?
+    // Added login method
+    suspend fun login(loginRequest: LoginRequest): LoginResponse
+
 }
 
-class UserRepositoryImpl @Inject constructor(
+class UserRepositoryImpl (
     private val userDao: UserDao,
     private val context: Context
 ) : UserRepository {
@@ -44,6 +50,8 @@ class UserRepositoryImpl @Inject constructor(
         return LocalDateTime.now(ZoneOffset.UTC)
             .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
     }
+
+    val userPreferences = UserPreferences(context)
 
     @RequiresApi(Build.VERSION_CODES.O)
     override suspend fun createInitialUser(username: String, password: String, role: UserRole): Long {
@@ -73,6 +81,25 @@ class UserRepositoryImpl @Inject constructor(
 
     override suspend fun getLatestUserByRole(role: UserRole): UserResponse? {
         return userDao.getLatestUserByRole(role.toString())?.toUserResponse()
+    }
+    override suspend fun login(loginRequest: LoginRequest): LoginResponse {
+        val user = userDao.login(loginRequest.username, loginRequest.password)
+            ?: throw IllegalStateException("Invalid username or password")
+
+        val loginResponse = LoginResponse(
+            userId = user.id,
+            username = user.userName,
+            role = user.role
+        )
+
+        // Save user session
+        userPreferences.saveUser(UserResponse(
+            id = user.id,
+            role = user.role,
+            accountCreationDate = user.accountCreationDate
+        ))
+
+        return loginResponse
     }
 
 }

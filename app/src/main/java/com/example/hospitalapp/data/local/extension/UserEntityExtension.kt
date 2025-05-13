@@ -259,6 +259,8 @@ fun UserEntity.toDoctorResponse(details: DoctorDetailEntity?): DoctorResponse {
         qualification = details?.qualification ?: "",
         experienceYears = details?.experienceYears ?: 0,
         consultationFee = details?.consultationFee ?: 0.0,
-        availableForEmergency = details?.availableForEmergency ?: false
+        availableForEmergency = details?.availableForEmergency ?: false,
+        fName = details?.fName ?: "",
+        lName = details?.lName ?: ""
     )
 }

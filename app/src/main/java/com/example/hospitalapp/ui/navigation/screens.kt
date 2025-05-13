@@ -31,6 +31,11 @@ data class HealthReportNav(
 )
 
 @Serializable
+data class DoctorSelectionNav(
+    val patientId: Long
+)
+
+@Serializable
 data class AppointmentBookingScreenNav(
     val patientId: Long,
     val doctorId: Long

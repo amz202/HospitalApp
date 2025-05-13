@@ -16,6 +16,7 @@ import com.example.hospitalapp.ui.screens.patient.*
 import com.example.hospitalapp.ui.screens.patient.detail.*
 import com.example.hospitalapp.ui.signin.*
 import com.example.hospitalapp.ui.viewModels.*
+import kotlinx.coroutines.launch
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
@@ -33,28 +34,45 @@ fun AppNavigation(
     val navController = rememberNavController()
     var userInfo by remember { mutableStateOf<UserPreferences.UserInfo?>(null) }
     val currentUserState by userViewModel.currentUser.collectAsState()
+    val coroutineScope = rememberCoroutineScope()
 
     LaunchedEffect(Unit) {
         userInfo = userPreferences.getUser()
+
+        userInfo?.let { user ->
+            when (user.role) {
+                "PATIENT" -> navController.navigate(PatientDashboardNav(user.id)) {
+                    popUpTo(LoginScreenNav) { inclusive = true }
+                }
+                "DOCTOR" -> navController.navigate(DoctorDashboardNav(user.id)) {
+                    popUpTo(LoginScreenNav) { inclusive = true }
+                }
+            }
+        }
     }
 
     NavHost(
         navController = navController,
-        startDestination = SignupScreenNav
+        startDestination = LoginScreenNav
     ) {
-        // Auth screens
         composable<LoginScreenNav> {
             LoginScreen(
                 userViewModel = userViewModel,
                 onLoginSuccess = { role ->
-                    when (role) {
-                        "PATIENT" -> navController.navigate(PatientDashboardNav) {
-                            popUpTo(LoginScreenNav) { inclusive = true }
+                    // Using coroutine scope to call suspend function
+                    coroutineScope.launch {
+                        val userId = userPreferences.getUserId()
+                        userId?.let {
+                            when (role) {
+                                "PATIENT" -> navController.navigate(PatientDashboardNav(userId)) {
+                                    popUpTo(LoginScreenNav) { inclusive = true }
+                                }
+                                "DOCTOR" -> navController.navigate(DoctorDashboardNav(userId)) {
+                                    popUpTo(LoginScreenNav) { inclusive = true }
+                                }
+                                else -> Log.e("Navigation", "Unknown role: $role")
+                            }
                         }
-                        "DOCTOR" -> navController.navigate(DoctorDashboardNav) {
-                            popUpTo(LoginScreenNav) { inclusive = true }
-                        }
-                        else -> Log.e("Navigation", "Unknown role: $role")
                     }
                 },
                 onSignUpClick = {
@@ -62,6 +80,7 @@ fun AppNavigation(
                 }
             )
         }
+
 
         composable<SignupScreenNav> {
             SignupScreen(
@@ -151,6 +170,15 @@ fun AppNavigation(
                 appointmentViewModel = appointmentViewModel,
                 navController = navController,
                 doctorId = args.doctorId
+            )
+        }
+
+        composable<DoctorSelectionNav> {
+            val args = it.toRoute<DoctorSelectionNav>()
+            DoctorSelectionScreen(
+                patientId = args.patientId,
+                doctorViewModel = doctorViewModel,
+                navController = navController
             )
         }
 

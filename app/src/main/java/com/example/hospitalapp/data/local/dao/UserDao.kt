@@ -23,4 +23,7 @@ interface UserDao {
 
     @Query("SELECT * FROM users WHERE role = :role ORDER BY accountCreationDate DESC LIMIT 1")
     suspend fun getLatestUserByRole(role: String): UserEntity?
+
+    @Query("SELECT * FROM users WHERE userName = :username AND password = :password LIMIT 1")
+    suspend fun login(username: String, password: String): UserEntity?
 }
