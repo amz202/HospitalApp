@@ -26,7 +26,7 @@ class VitalsViewModel(
     var patientVitalsUiState: BaseUiState<List<VitalsResponse>> by mutableStateOf(BaseUiState.Loading)
         private set
 
-    var createVitalsUiState: BaseUiState<VitalsResponse> by mutableStateOf(BaseUiState.Loading)
+    var createVitalsUiState: BaseUiState<VitalsResponse?> by mutableStateOf(BaseUiState.Success(null))
         private set
 
     private val _selectedVitals = MutableStateFlow<VitalsResponse?>(null)
@@ -46,6 +46,9 @@ class VitalsViewModel(
                 vitalsDetailsUiState = BaseUiState.Error
             }
         }
+    }
+    fun resetCreateVitalsState() {
+        createVitalsUiState = BaseUiState.Success(null)
     }
 
     fun getVitalsByPatient(patientId: Long) {

@@ -8,6 +8,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.HealthAndSafety
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -17,12 +18,14 @@ import androidx.navigation.NavController
 import com.example.hospitalapp.network.model.AppointmentResponse
 import com.example.hospitalapp.network.model.MedicationRequest
 import com.example.hospitalapp.network.model.PatientResponse
+import com.example.hospitalapp.network.model.VitalsResponse
 import com.example.hospitalapp.ui.navigation.DoctorAppointmentBookingNav
 import com.example.hospitalapp.ui.navigation.HealthReportNav
 import com.example.hospitalapp.ui.screens.patient.AppointmentsSection
 import com.example.hospitalapp.ui.screens.patient.MedicationsSection
 import com.example.hospitalapp.ui.screens.patient.VitalsSection
 import com.example.hospitalapp.ui.viewModels.*
+import java.time.LocalDateTime
 
 // In your PatientDetailScreen.kt
 
@@ -43,14 +46,20 @@ fun PatientDetailScreen(
     // States for dialogs
     var showAppointmentSelector by remember { mutableStateOf(false) }
     var showAddMedicationDialog by remember { mutableStateOf(false) }
+    var showAddVitalsDialog by remember { mutableStateOf(false) }
     var selectedAppointment by remember { mutableStateOf<AppointmentResponse?>(null) }
 
-    // Current date time from your system
-    val currentDateTime = "2025-05-13 11:37:08"
-
-    // Monitor medication creation status
+    // Monitor creation states
     val createMedicationState = medicationViewModel.createMedicationUiState
+    val createVitalsState = vitalsViewModel.createVitalsUiState
+
+    // Remember the last successful vitals
+    var lastSuccessfulVitals by remember { mutableStateOf<VitalsResponse?>(null) }
+
+    // Show a snackbar message when medication is created
     val snackbarHostState = remember { SnackbarHostState() }
+
+    val currentDateTime = LocalDateTime.now()
 
     // Effect to show snackbar messages
     LaunchedEffect(createMedicationState) {
@@ -74,7 +83,30 @@ fun PatientDetailScreen(
             else -> {}
         }
     }
-
+    LaunchedEffect(createVitalsState) {
+        when (createVitalsState) {
+            is BaseUiState.Success -> {
+                val vitals = createVitalsState.data
+                if (vitals != null && vitals != lastSuccessfulVitals) {
+                    lastSuccessfulVitals = vitals
+                    snackbarHostState.showSnackbar(
+                        message = "Vitals recorded successfully",
+                        duration = SnackbarDuration.Short
+                    )
+                    vitalsViewModel.getVitalsByPatient(patientId) // Refresh vitals data
+                    vitalsViewModel.resetCreateVitalsState()
+                }
+            }
+            is BaseUiState.Error -> {
+                snackbarHostState.showSnackbar(
+                    message = "Failed to record vitals. Please try again.",
+                    duration = SnackbarDuration.Short
+                )
+                vitalsViewModel.resetCreateVitalsState()
+            }
+            else -> {}
+        }
+    }
     LaunchedEffect(patientId) {
         patientViewModel.getPatientById(patientId)
     }
@@ -100,6 +132,12 @@ fun PatientDetailScreen(
                     // Add medication button - shows appointment selector first
                     IconButton(onClick = { showAppointmentSelector = true }) {
                         Icon(Icons.Default.Add, contentDescription = "Add Medication")
+                    }
+                    IconButton(onClick = { showAddVitalsDialog = true }) {
+                        Icon(
+                            Icons.Default.HealthAndSafety,
+                            contentDescription = "Record Vitals"
+                        )
                     }
                 }
             )
@@ -132,10 +170,9 @@ fun PatientDetailScreen(
                     selectedAppointment = null  // Reset selected appointment
                 },
                 onAddMedication = { medicationRequest ->
-                    // Create a new request with the correct date format
                     val updatedRequest = medicationRequest.copy(
-                        startDate = currentDateTime,
-                        endDate = medicationRequest.endDate?.let { currentDateTime }
+                        startDate = currentDateTime.toString(),
+                        endDate = medicationRequest.endDate?.let { currentDateTime }.toString()
                     )
 
                     medicationViewModel.createMedication(updatedRequest)
@@ -144,7 +181,17 @@ fun PatientDetailScreen(
                 }
             )
         }
-
+        // Add RecordVitalsDialog
+        if (showAddVitalsDialog) {
+            RecordVitalsDialog(
+                patientId = patientId,
+                onDismiss = { showAddVitalsDialog = false },
+                onSaveVitals = { vitalsRequest ->
+                    vitalsViewModel.createVitals(vitalsRequest)
+                    showAddVitalsDialog = false
+                }
+            )
+        }
         when (patientState) {
             is BaseUiState.Loading -> {
                 Box(

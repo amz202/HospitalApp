@@ -35,7 +35,7 @@ fun HealthReportScreen(
     val currentDateTime = LocalDateTime.now()
 
     LaunchedEffect(patientId) {
-        vitalsViewModel.getVitalsById(patientId)
+        vitalsViewModel.getVitalsByPatient(patientId)
         medicationViewModel.getPatientMedications(patientId)
         appointmentViewModel.getPatientAppointments(patientId)
     }
@@ -134,9 +134,6 @@ fun HealthReportScreen(
                     when (val state = appointmentViewModel.appointmentsUiState) {
                         is BaseUiState.Success -> {
                             val upcomingAppointments = state.data
-                                .filter {
-                                    LocalDateTime.parse(it.scheduledTime).isAfter(currentDateTime)
-                                }
                                 .sortedBy { it.scheduledTime }
                                 .take(3)
 

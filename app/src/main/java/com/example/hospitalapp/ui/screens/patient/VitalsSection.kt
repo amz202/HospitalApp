@@ -34,7 +34,7 @@ fun VitalsSection(
     val vitalsState = vitalsViewModel.patientVitalsUiState
 
     LaunchedEffect(patientId) {
-        vitalsViewModel.getVitalsById(patientId)
+        vitalsViewModel.getVitalsByPatient(patientId)
     }
 
     Card(

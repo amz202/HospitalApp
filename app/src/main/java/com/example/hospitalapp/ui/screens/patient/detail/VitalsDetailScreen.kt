@@ -7,6 +7,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -18,6 +19,7 @@ import androidx.navigation.NavController
 import com.example.hospitalapp.ui.viewModels.VitalsViewModel
 import com.example.hospitalapp.ui.viewModels.BaseUiState
 import com.example.hospitalapp.network.model.VitalsResponse
+import com.example.hospitalapp.ui.navigation.VitalsChartNav
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
@@ -50,6 +52,11 @@ fun VitalsDetailScreen(
                     }
                 },
                 actions = {
+                    IconButton(onClick = {
+                        navController.navigate(VitalsChartNav(patientId = patientId))
+                    }) {
+                        Icon(Icons.Default.BarChart, contentDescription = "View Charts")
+                    }
                     IconButton(onClick = { showFilterDialog = true }) {
                         Icon(Icons.Default.MoreVert, contentDescription = "Filter")
                     }

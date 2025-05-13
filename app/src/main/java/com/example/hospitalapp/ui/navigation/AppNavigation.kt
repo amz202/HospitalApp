@@ -13,6 +13,7 @@ import com.example.hospitalapp.data.datastore.UserPreferences
 import com.example.hospitalapp.ui.screens.doctor.*
 import com.example.hospitalapp.ui.screens.doctor.detail.*
 import com.example.hospitalapp.ui.screens.patient.*
+import com.example.hospitalapp.ui.screens.patient.chart.VitalsChartScreen
 import com.example.hospitalapp.ui.screens.patient.detail.*
 import com.example.hospitalapp.ui.signin.*
 import com.example.hospitalapp.ui.viewModels.*
@@ -233,6 +234,15 @@ fun AppNavigation(
                 appointmentViewModel = appointmentViewModel,
                 navController = navController,
                 doctorId = args.doctorId
+            )
+        }
+
+        composable<VitalsChartNav> { route ->
+            val args = route.toRoute<VitalsChartNav>()
+            VitalsChartScreen(
+                patientId = args.patientId,
+                vitalsViewModel = vitalsViewModel,
+                navController = navController
             )
         }
     }

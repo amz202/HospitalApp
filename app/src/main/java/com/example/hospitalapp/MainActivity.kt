@@ -60,21 +60,15 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             HospitalAppTheme {
-                Scaffold(
-                    modifier = Modifier.fillMaxSize()
-                ) { padding ->
-                    Surface(modifier = Modifier.padding(padding)) {
-                        AppNavigation(
-                            vitalsViewModel = vitalsViewModel,
-                            medicationViewModel = medicationViewModel,
-                            appointmentViewModel = appointmentViewModel,
-                            patientViewModel = patientViewModel,
-                            doctorViewModel = doctorViewModel,
-                            userViewModel = userViewModel,
-                            userPreferences = userPreferences,
-                        )
-                    }
-                }
+                AppNavigation(
+                    vitalsViewModel = vitalsViewModel,
+                    medicationViewModel = medicationViewModel,
+                    appointmentViewModel = appointmentViewModel,
+                    patientViewModel = patientViewModel,
+                    doctorViewModel = doctorViewModel,
+                    userViewModel = userViewModel,
+                    userPreferences = userPreferences,
+                )
             }
         }
     }
