@@ -69,7 +69,11 @@ class DoctorRepositoryImpl @Inject constructor(
             consultationFee = request.consultationFee,
             availableForEmergency = request.availableForEmergency,
             createdAt = currentDate,
-            updatedAt = currentDate
+            updatedAt = currentDate,
+            email = request.email,
+            fName = request.fName,
+            lName = request.lName,
+            phoneNumber = request.phoneNumber,
         )
 
         doctorDetailDao.insertDoctorDetail(doctorDetail)

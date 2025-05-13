@@ -36,11 +36,10 @@ fun SignupScreen(
     var showUserForm by remember { mutableStateOf(false) }
 
     val createUserState = userViewModel.createUserUiState
-    val errorMessage by userViewModel.errorMessage.collectAsState()
-    val currentUserId = userViewModel.currentUser.collectAsState().value?.id
 
-    LaunchedEffect(currentUserId) {
-        currentUserId?.let { userId ->
+    LaunchedEffect(createUserState) {
+        if (createUserState is BaseUiState.Success && createUserState.data != null) {
+            val userId = createUserState.data
             selectedRole?.let { role ->
                 onSignUpSuccess(role, userId)
             }
@@ -129,10 +128,6 @@ private fun UserFormContent(
 ) {
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-    var email by remember { mutableStateOf("") }
-    var firstName by remember { mutableStateOf("") }
-    var lastName by remember { mutableStateOf("") }
-    var phoneNumber by remember { mutableStateOf("") }
 
     val errorMessage by userViewModel.errorMessage.collectAsState()
     val createUserState = userViewModel.createUserUiState
@@ -176,39 +171,6 @@ private fun UserFormContent(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            OutlinedTextField(
-                value = email,
-                onValueChange = { email = it },
-                label = { Text("Email") },
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            OutlinedTextField(
-                value = firstName,
-                onValueChange = { firstName = it },
-                label = { Text("First Name") },
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            OutlinedTextField(
-                value = lastName,
-                onValueChange = { lastName = it },
-                label = { Text("Last Name") },
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            OutlinedTextField(
-                value = phoneNumber,
-                onValueChange = { phoneNumber = it },
-                label = { Text("Phone Number") },
-                modifier = Modifier.fillMaxWidth()
-            )
 
             if (errorMessage != null) {
                 Text(

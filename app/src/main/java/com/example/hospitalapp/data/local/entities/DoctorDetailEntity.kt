@@ -28,5 +28,9 @@ data class DoctorDetailEntity(
     val consultationFee: Double,
     val availableForEmergency: Boolean,
     val createdAt: String,
-    val updatedAt: String
+    val updatedAt: String,
+    val email: String,
+    val fName: String,
+    val lName: String,
+    val phoneNumber: String?
 )

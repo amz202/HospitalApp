@@ -70,6 +70,7 @@ class PatientViewModel(
             } catch (e: Exception) {
                 _errorMessage.value = e.message ?: "Error creating patient details"
                 patientDetailsUiState = BaseUiState.Error
+                return@launch
             }
         }
     }

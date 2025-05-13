@@ -6,9 +6,7 @@ import java.time.LocalDate
 @Serializable
 data class PatientRequest(
     val id: Long? = null,
-    val username: String,
     val email: String,
-    val password: String,
     val fName: String,
     val lName: String,
     val phoneNumber: String?,

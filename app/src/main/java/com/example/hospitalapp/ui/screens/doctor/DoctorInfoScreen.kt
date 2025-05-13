@@ -240,14 +240,13 @@ fun DoctorInfoScreen(
                 Button(
                     onClick = {
                         showSaveDialog = false
-                        viewModel.updateDoctorDetails(
+                        viewModel.createDoctorDetails(
                             doctorId,
                             DoctorRequest(
                                 fName = fName,
                                 lName = lName,
                                 email = email,
                                 phoneNumber = phoneNumber,
-                                password = "", // Not needed for update
                                 specialization = specialization,
                                 licenseNumber = licenseNumber,
                                 qualification = qualification,

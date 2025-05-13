@@ -21,14 +21,14 @@ data class DoctorRequest(
     val lName: String, // Changed from lastName
     val email: String,
     val phoneNumber: String,
-    val password: String,
     val specialization: String,
     val licenseNumber: String,
     val qualification: String,
     val experienceYears: Int,
     val consultationFee: Double,
-    val availableForEmergency: Boolean = true
-)
+    val availableForEmergency: Boolean = true,
+    val id: Long? = null,
+    )
 @Serializable
 data class DoctorUpdateRequest(
     val specialization: String,

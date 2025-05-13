@@ -65,7 +65,14 @@ class PatientRepositoryImpl @Inject constructor(
             allergies = request.allergies,
             medicalHistory = request.medicalHistory,
             createdAt = currentDate.toString(),
-            updatedAt = currentDate.toString()
+            updatedAt = currentDate.toString(),
+            email = request.email,
+            fName = request.fName,
+            lName = request.lName,
+            phoneNumber = request.phoneNumber,
+            gender = request.gender,
+            dob = request.dob,
+            address = request.address
         )
 
         patientDetailDao.insertPatientDetail(patientDetail)
