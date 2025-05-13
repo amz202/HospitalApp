@@ -14,6 +14,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.example.hospitalapp.network.model.AppointmentResponse
 import com.example.hospitalapp.network.model.MedicationRequest
 import com.example.hospitalapp.network.model.PatientResponse
 import com.example.hospitalapp.ui.navigation.DoctorAppointmentBookingNav
@@ -37,8 +38,11 @@ fun PatientDetailScreen(
 ) {
     val patientState = patientViewModel.patientDetailsUiState
 
-    // State for showing the add medication dialog
+    // States for dialogs
+    var showAppointmentSelector by remember { mutableStateOf(false) }
     var showAddMedicationDialog by remember { mutableStateOf(false) }
+    var selectedAppointment by remember { mutableStateOf<AppointmentResponse?>(null) }
+
 
     // Monitor medication creation status
     val createMedicationState = medicationViewModel.createMedicationUiState
@@ -114,11 +118,27 @@ fun PatientDetailScreen(
             is BaseUiState.Success -> {
                 val patient = patientState.data
 
+                // Show appointment selector dialog
+                if (showAppointmentSelector) {
+                    AppointmentSelectionDialog(
+                        patientId = patientId,
+                        appointmentViewModel = appointmentViewModel,
+                        onSelect = { appointment ->
+                            selectedAppointment = appointment
+                            showAppointmentSelector = false
+                            showAddMedicationDialog = true
+                        },
+                        onDismiss = {
+                            showAppointmentSelector = false
+                        }
+                    )
+                }
+
                 // Show add medication dialog if requested
                 if (showAddMedicationDialog) {
                     AddMedicationDialog(
                         patientId = patientId,
-                        appointmentId = null, // We're not associating with an appointment in this case
+                        appointmentId = selectedAppointment?.id ?: 1,
                         onDismiss = { showAddMedicationDialog = false },
                         onAddMedication = { medicationRequest ->
                             medicationViewModel.createMedication(medicationRequest)

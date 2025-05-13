@@ -269,7 +269,7 @@ private fun PatientCard(
         ) {
             Column {
                 Text(
-                    text = "${patient.id}",
+                    text = "${patient.fName} ${patient.lName}",
                     style = MaterialTheme.typography.titleMedium
                 )
                 if (!patient.bloodGroup.isNullOrBlank()) {

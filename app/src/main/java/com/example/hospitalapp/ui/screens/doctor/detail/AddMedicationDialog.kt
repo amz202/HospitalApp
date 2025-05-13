@@ -21,7 +21,7 @@ import java.time.format.DateTimeFormatter
 @Composable
 fun AddMedicationDialog(
     patientId: Long,
-    appointmentId: Long?,
+    appointmentId: Long,
     onDismiss: () -> Unit,
     onAddMedication: (MedicationRequest) -> Unit
 ) {

@@ -6,7 +6,7 @@ import kotlinx.serialization.Serializable
 data class MedicationResponse(
     val id: Long,
     val patient: PatientResponse,
-    val appointmentId: Long?,
+    val appointmentId: Long,
     val name: String,
     val dosage: String,
     val frequency: String,
@@ -20,7 +20,7 @@ data class MedicationResponse(
 @Serializable
 data class MedicationRequest(
     val patientId: Long,
-    val appointmentId: Long? = null,
+    val appointmentId: Long,
     val name: String,
     val dosage: String,
     val frequency: String,

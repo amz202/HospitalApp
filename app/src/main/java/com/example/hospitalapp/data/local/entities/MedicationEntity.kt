@@ -18,7 +18,7 @@ import androidx.room.PrimaryKey
             entity = AppointmentEntity::class,
             parentColumns = ["id"],
             childColumns = ["appointmentId"],
-            onDelete = ForeignKey.SET_NULL
+            onDelete = ForeignKey.CASCADE
         )
     ],
     indices = [
@@ -30,7 +30,7 @@ data class MedicationEntity(
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,
     val patientId: Long,
-    val appointmentId: Long?,
+    val appointmentId: Long,
     val name: String,
     val dosage: String,
     val frequency: String,
