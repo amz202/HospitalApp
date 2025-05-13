@@ -13,8 +13,11 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavHostController
 import com.example.hospitalapp.network.model.PatientRequest
 import com.example.hospitalapp.network.model.PatientUpdateRequest
+import com.example.hospitalapp.ui.navigation.PatientDashboardNav
+import com.example.hospitalapp.ui.navigation.PatientInfoNav
 import com.example.hospitalapp.ui.viewModels.BaseUiState
 import com.example.hospitalapp.ui.viewModels.PatientViewModel
 @OptIn(ExperimentalMaterial3Api::class)
@@ -22,8 +25,8 @@ import com.example.hospitalapp.ui.viewModels.PatientViewModel
 fun PatientInfoScreen(
     viewModel: PatientViewModel,
     patientId: Long,
-    onProfileUpdated: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    navController: NavHostController
 ) {
     var showSaveDialog by remember { mutableStateOf(false) }
 
@@ -303,7 +306,7 @@ fun PatientInfoScreen(
                                     medicalHistory = medicalHistory
                                 )
                             )
-                            onProfileUpdated()
+                            navController.navigate(PatientDashboardNav(patientId))
                         }
                     ) {
                         Text("Confirm")

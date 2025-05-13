@@ -41,7 +41,7 @@ fun DoctorDashboardScreen(
     modifier: Modifier = Modifier
 ) {
     var selectedTab by remember { mutableStateOf(0) }
-    val tabs = listOf("Overview", "Patients", "Appointments")
+    val tabs = listOf("Overview", "Patients", "Appointment")
 
     // Initialize required data
     LaunchedEffect(doctorId) {

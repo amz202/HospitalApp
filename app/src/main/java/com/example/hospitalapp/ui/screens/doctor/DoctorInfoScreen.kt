@@ -18,6 +18,8 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.hospitalapp.network.model.DoctorRequest
 import com.example.hospitalapp.network.model.DoctorResponse
+import com.example.hospitalapp.ui.navigation.DoctorDashboardNav
+import com.example.hospitalapp.ui.navigation.DoctorInfoNav
 import com.example.hospitalapp.ui.viewModels.BaseUiState
 import com.example.hospitalapp.ui.viewModels.DoctorViewModel
 
@@ -27,7 +29,6 @@ fun DoctorInfoScreen(
     viewModel: DoctorViewModel,
     doctorId: Long,
     navController: NavController,
-    onProfileUpdated: () -> Unit
 ) {
     var showSaveDialog by remember { mutableStateOf(false) }
     val context = LocalContext.current
@@ -255,7 +256,7 @@ fun DoctorInfoScreen(
                                 availableForEmergency = availableForEmergency
                             )
                         )
-                        onProfileUpdated()
+                        navController.navigate(DoctorDashboardNav(doctorId))
                         Toast.makeText(context, "Profile updated successfully", Toast.LENGTH_SHORT).show()
                     }
                 ) {

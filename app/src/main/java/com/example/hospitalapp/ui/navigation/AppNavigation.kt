@@ -91,11 +91,6 @@ fun AppNavigation(
             DoctorInfoScreen(
                 viewModel = doctorViewModel,
                 doctorId = args.doctorId,
-                onProfileUpdated = {
-                    navController.navigate(DoctorDashboardNav) {
-                        popUpTo(DoctorInfoNav::class) { inclusive = true }
-                    }
-                },
                 navController = navController
             )
         }
@@ -105,19 +100,15 @@ fun AppNavigation(
             PatientInfoScreen(
                 viewModel = patientViewModel,
                 patientId = args.patientId,
-                onProfileUpdated = {
-                    navController.navigate(PatientDashboardNav) {
-                        popUpTo(PatientInfoNav::class) { inclusive = true }
-                    }
-                }
+                navController = navController,
             )
         }
 
         // Patient Routes
         composable<PatientDashboardNav> {
-            val userId = currentUserState?.id ?: return@composable
+            val args = it.toRoute<PatientDashboardNav>()
             PatientDashboardScreen(
-                patientId = userId,
+                patientId = args.patientId,
                 navController = navController,
                 patientViewModel = patientViewModel,
                 vitalsViewModel = vitalsViewModel,
@@ -176,9 +167,9 @@ fun AppNavigation(
 
         // Doctor Routes
         composable<DoctorDashboardNav> {
-            val userId = currentUserState?.id ?: return@composable
+            val args = it.toRoute<DoctorDashboardNav>()
             DoctorDashboardScreen(
-                doctorId = userId,
+                doctorId = args.doctorId,
                 navController = navController,
                 doctorViewModel = doctorViewModel,
             )

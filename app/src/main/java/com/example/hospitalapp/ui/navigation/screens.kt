@@ -6,7 +6,10 @@ import kotlinx.serialization.Serializable
 object SignInScreenNav
 
 @Serializable
-object PatientDashboardNav
+data class PatientDashboardNav(
+    val patientId: Long
+)
+
 
 @Serializable
 data class VitalsDetailNav(
@@ -34,7 +37,9 @@ data class AppointmentBookingScreenNav(
 )
 
 @Serializable
-object DoctorDashboardNav
+data class DoctorDashboardNav(
+    val doctorId: Long
+)
 
 @Serializable
 data class DoctorPatientDetailNav(
