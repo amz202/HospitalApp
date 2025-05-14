@@ -35,7 +35,6 @@ interface UserRepository {
     suspend fun deleteUser(id: Long)
     suspend fun getUsersByRole(role: UserRole): List<UserResponse>
     suspend fun getLatestUserByRole(role: UserRole): UserResponse?
-    // Added login method
     suspend fun login(loginRequest: LoginRequest): LoginResponse
 
 }

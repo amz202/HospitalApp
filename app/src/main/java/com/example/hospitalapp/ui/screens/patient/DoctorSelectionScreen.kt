@@ -29,10 +29,8 @@ fun DoctorSelectionScreen(
     navController: NavController,
     modifier: Modifier = Modifier
 ) {
-    // State to track search query
     var searchQuery by remember { mutableStateOf("") }
 
-    // Get all doctors
     LaunchedEffect(Unit) {
         doctorViewModel.getDoctors()
     }
@@ -103,7 +101,6 @@ fun DoctorSelectionScreen(
                                 SimpleDoctorCard(
                                     doctor = doctor,
                                     onClick = {
-                                        // Navigate to appointment booking
                                         navController.navigate(
                                             AppointmentBookingScreenNav(
                                                 patientId = patientId,

@@ -35,6 +35,7 @@ fun AppointmentBookingScreen(
     var isBooking by remember { mutableStateOf(false) }
     var showDatePicker by remember { mutableStateOf(false) }
     var showTimePicker by remember { mutableStateOf(false) }
+    var meetingLink by remember { mutableStateOf("") }
 
     val currentDateTime = LocalDateTime.now()
 
@@ -126,7 +127,15 @@ fun AppointmentBookingScreen(
                     }
                 }
             }
-
+            if (appointmentType == AppointmentType.VIDEO_CONSULTATION) {
+                OutlinedTextField(
+                    value = meetingLink,
+                    onValueChange = { meetingLink = it },
+                    label = { Text("Meeting Link") },
+                    modifier = Modifier.fillMaxWidth(),
+                    placeholder = { Text("Enter video consultation link") }
+                )
+            }
             // Reason Input
             OutlinedTextField(
                 value = reason,
@@ -143,18 +152,20 @@ fun AppointmentBookingScreen(
                         isBooking = true
                         val appointment = AppointmentRequest(
                             patientId = patientId,
-                            doctorId = doctorId, // Default doctor for now
+                            doctorId = doctorId,
                             scheduledTime = selectedDate.format(DateTimeFormatter.ISO_DATE_TIME),
                             type = appointmentType.toString(),
-                            reason = reason
+                            reason = reason,
+                            virtualMeetingUrl = if (appointmentType == AppointmentType.VIDEO_CONSULTATION) meetingLink else null
+
                         )
                         appointmentViewModel.createAppointment(appointment)
                         navController.navigateUp()
                     }
                 },
                 modifier = Modifier.fillMaxWidth(),
-                enabled = !isBooking && reason.isNotBlank()
-            ) {
+                enabled = !isBooking && reason.isNotBlank() &&
+                        (appointmentType != AppointmentType.VIDEO_CONSULTATION || meetingLink.isNotBlank())            ) {
                 if (isBooking) {
                     CircularProgressIndicator(
                         modifier = Modifier.size(24.dp),
@@ -204,6 +215,7 @@ fun AppointmentBookingScreen(
                 }
             )
         }
+
     }
 }
 

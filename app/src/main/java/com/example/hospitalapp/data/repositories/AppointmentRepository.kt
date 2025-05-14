@@ -45,13 +45,11 @@ class AppointmentRepositoryImpl (
     }
 
     override suspend fun createAppointment(request: AppointmentRequest): AppointmentResponse {
-        // Validate patient exists and has patient details
         val patient = userDao.getUserById(request.patientId)
             ?: throw IllegalStateException("Patient not found with id: ${request.patientId}")
         patientDetailDao.getPatientDetailByUserId(request.patientId)
             ?: throw IllegalStateException("Patient details not found for id: ${request.patientId}")
 
-        // Validate doctor exists and has doctor details
         val doctor = userDao.getUserById(request.doctorId)
             ?: throw IllegalStateException("Doctor not found with id: ${request.doctorId}")
         doctorDetailDao.getDoctorDetailByUserId(request.doctorId)
@@ -77,13 +75,11 @@ class AppointmentRepositoryImpl (
         val existing = appointmentDao.getAppointmentById(id)
             ?: throw IllegalStateException("Appointment not found with id: $id")
 
-        // Validate patient exists and has patient details
         val patient = userDao.getUserById(request.patientId)
             ?: throw IllegalStateException("Patient not found with id: ${request.patientId}")
         patientDetailDao.getPatientDetailByUserId(request.patientId)
             ?: throw IllegalStateException("Patient details not found for id: ${request.patientId}")
 
-        // Validate doctor exists and has doctor details
         val doctor = userDao.getUserById(request.doctorId)
             ?: throw IllegalStateException("Doctor not found with id: ${request.doctorId}")
         doctorDetailDao.getDoctorDetailByUserId(request.doctorId)
@@ -106,7 +102,6 @@ class AppointmentRepositoryImpl (
     }
 
     override suspend fun getPatientAppointments(patientId: Long): List<AppointmentResponse> {
-        // Verify patient exists and has patient details
         val patient = userDao.getUserById(patientId)
             ?: throw IllegalStateException("Patient not found with id: $patientId")
         patientDetailDao.getPatientDetailByUserId(patientId)
@@ -118,7 +113,6 @@ class AppointmentRepositoryImpl (
     }
 
     override suspend fun getDoctorAppointments(doctorId: Long): List<AppointmentResponse> {
-        // Verify doctor exists and has doctor details
         val doctor = userDao.getUserById(doctorId)
             ?: throw IllegalStateException("Doctor not found with id: $doctorId")
         doctorDetailDao.getDoctorDetailByUserId(doctorId)

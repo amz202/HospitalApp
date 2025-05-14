@@ -49,19 +49,15 @@ fun PatientDetailScreen(
     var showAddVitalsDialog by remember { mutableStateOf(false) }
     var selectedAppointment by remember { mutableStateOf<AppointmentResponse?>(null) }
 
-    // Monitor creation states
     val createMedicationState = medicationViewModel.createMedicationUiState
     val createVitalsState = vitalsViewModel.createVitalsUiState
 
-    // Remember the last successful vitals
     var lastSuccessfulVitals by remember { mutableStateOf<VitalsResponse?>(null) }
 
-    // Show a snackbar message when medication is created
     val snackbarHostState = remember { SnackbarHostState() }
 
     val currentDateTime = LocalDateTime.now()
 
-    // Effect to show snackbar messages
     LaunchedEffect(createMedicationState) {
         when (createMedicationState) {
             is BaseUiState.Success -> {
@@ -93,7 +89,7 @@ fun PatientDetailScreen(
                         message = "Vitals recorded successfully",
                         duration = SnackbarDuration.Short
                     )
-                    vitalsViewModel.getVitalsByPatient(patientId) // Refresh vitals data
+                    vitalsViewModel.getVitalsByPatient(patientId)
                     vitalsViewModel.resetCreateVitalsState()
                 }
             }
@@ -144,7 +140,6 @@ fun PatientDetailScreen(
         },
         snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { padding ->
-        // First, show appointment selector when the Add button is clicked
         if (showAppointmentSelector) {
             AppointmentSelectionDialog(
                 patientId = patientId,
@@ -152,7 +147,7 @@ fun PatientDetailScreen(
                 onSelect = { appointment ->
                     selectedAppointment = appointment
                     showAppointmentSelector = false
-                    showAddMedicationDialog = true  // Show medication dialog after selection
+                    showAddMedicationDialog = true
                 },
                 onDismiss = {
                     showAppointmentSelector = false
@@ -160,14 +155,13 @@ fun PatientDetailScreen(
             )
         }
 
-        // Then show medication dialog after appointment is selected
         if (showAddMedicationDialog && selectedAppointment != null) {
             AddMedicationDialog(
                 patientId = patientId,
-                appointmentId = selectedAppointment!!.id,  // Use the selected appointment ID
+                appointmentId = selectedAppointment!!.id,
                 onDismiss = {
                     showAddMedicationDialog = false
-                    selectedAppointment = null  // Reset selected appointment
+                    selectedAppointment = null
                 },
                 onAddMedication = { medicationRequest ->
                     val updatedRequest = medicationRequest.copy(
@@ -177,7 +171,7 @@ fun PatientDetailScreen(
 
                     medicationViewModel.createMedication(updatedRequest)
                     showAddMedicationDialog = false
-                    selectedAppointment = null  // Reset selected appointment
+                    selectedAppointment = null
                 }
             )
         }
@@ -249,10 +243,8 @@ private fun PatientDetailContent(
             .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        // Patient info card
         PatientInfoCard(patient)
 
-        // Doctor actions
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween

@@ -128,16 +128,13 @@ class UserViewModel(
         }
     }
     init {
-        // Check if user is already logged in
         checkLoginStatus()
     }
 
     private fun checkLoginStatus() {
         viewModelScope.launch {
             try {
-                // We'll use the UserManager to check if a user is logged in
                 UserManager.currentUser?.let { userData ->
-                    // User is logged in, fetch full details
                     getUserById(userData.id)
                 }
             } catch (e: Exception) {
@@ -153,7 +150,6 @@ class UserViewModel(
                 val loginRequest = LoginRequest(username = username, password = password)
                 val response = userRepository.login(loginRequest)
 
-                // Update UserManager with the current user data
                 val user = userRepository.getUserById(response.userId)
                 UserManager.updateUser(
                     UserData(
@@ -167,7 +163,6 @@ class UserViewModel(
                     )
                 )
 
-                // Update state
                 _currentUser.value = user
                 userUiState = BaseUiState.Success(user)
                 loginState = BaseUiState.Success(response)

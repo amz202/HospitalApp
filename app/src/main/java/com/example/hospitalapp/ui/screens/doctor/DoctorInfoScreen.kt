@@ -45,15 +45,12 @@ fun DoctorInfoScreen(
     var consultationFee by remember { mutableStateOf("") }
     var availableForEmergency by remember { mutableStateOf(true) }
 
-    // Observe doctor details
     val doctorState = viewModel.doctorDetailsUiState
 
-    // Load initial data
     LaunchedEffect(doctorId) {
         viewModel.getDoctorById(doctorId)
     }
 
-    // Update UI state when doctor data changes
     LaunchedEffect(doctorState) {
         if (doctorState is BaseUiState.Success) {
             val doctor = doctorState.data

@@ -76,6 +76,9 @@ object LoginScreenNav
 object SignupScreenNav
 
 @Serializable
+object AdminDashboardNav
+
+@Serializable
 data class DoctorInfoNav(
     val doctorId: Long
 )

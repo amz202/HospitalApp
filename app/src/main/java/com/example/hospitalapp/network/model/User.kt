@@ -15,11 +15,11 @@ data class CreateUserRequest(
     val username: String,
     val password: String,
     val email: String,
-    val fName: String, // Changed from firstName
-    val lName: String, // Changed from lastName
+    val fName: String,
+    val lName: String,
     val phoneNumber: String?,
     val gender: Gender,
-    val dob: String,  // Changed from dateOfBirth
+    val dob: String,
     val address: String,
     val role: String
 )
@@ -48,17 +48,15 @@ data class SignupRequest(
     val lName: String,
     val phoneNumber: String?,
     val role: String,
-    // Doctor specific fields
     val specialization: String? = null,
     val licenseNumber: String? = null,
     val experienceYears: Int? = null,
-    // Patient specific fields
     val bloodGroup: String? = null,
     val allergies: List<String>? = null
 )
 enum class UserRole {
     PATIENT,
-    DOCTOR;
-
+    DOCTOR,
+    ADMIN;
     override fun toString(): String = name
 }

@@ -50,7 +50,7 @@ class VitalsRepositoryImpl (
             respiratoryRate = request.respiratoryRate,
             bloodSugar = request.bloodSugar,
             recordedAt = LocalDateTime.now().toString(),
-            critical = false,  // Default values for critical tracking
+            critical = false,
             criticalNotes = null,
             alertSent = false
         )

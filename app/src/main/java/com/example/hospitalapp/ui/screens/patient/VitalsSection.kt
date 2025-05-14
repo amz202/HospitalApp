@@ -98,8 +98,8 @@ fun VitalsSection(
                                 ) {
                                     vitals
                                         .sortedByDescending { it.recordedAt }
-                                        .drop(1)  // Skip the latest one as it's shown in summary
-                                        .take(2)  // Show only 2 recent records
+                                        .drop(1)
+                                        .take(2)
                                         .forEach { vital ->
                                             VitalsHistoryItem(vital)
                                         }

@@ -30,7 +30,6 @@ fun PatientInfoScreen(
 ) {
     var showSaveDialog by remember { mutableStateOf(false) }
 
-    // Basic Information
     var email by remember { mutableStateOf("") }
     var firstName by remember { mutableStateOf("") }
     var lastName by remember { mutableStateOf("") }
@@ -39,7 +38,6 @@ fun PatientInfoScreen(
     var address by remember { mutableStateOf("") }
     var phoneNumber by remember { mutableStateOf("") }
 
-    // Medical Information
     var bloodGroup by remember { mutableStateOf("") }
     var allergies by remember { mutableStateOf<List<String>>(emptyList()) }
     var allergyInput by remember { mutableStateOf("") }

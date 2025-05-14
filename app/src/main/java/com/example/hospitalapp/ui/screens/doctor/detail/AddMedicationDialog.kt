@@ -32,7 +32,7 @@ import androidx.compose.ui.window.Dialog
 @Composable
 fun AddMedicationDialog(
     patientId: Long,
-    appointmentId: Long,  // This will be the selected appointment's ID
+    appointmentId: Long,
     onDismiss: () -> Unit,
     onAddMedication: (MedicationRequest) -> Unit
 ) {
@@ -114,7 +114,7 @@ fun AddMedicationDialog(
                 // Only show end date if enabled (display only)
                 if (endDateEnabled) {
                     Text(
-                        text = "End Date: $currentDateTime",  // Using same date for simplicity
+                        text = "End Date: $currentDateTime",
                         style = MaterialTheme.typography.bodyLarge
                     )
                 }
@@ -144,7 +144,6 @@ fun AddMedicationDialog(
                             try {
                                 Log.d("AddMedicationDialog", "Creating medication with appointmentId: $appointmentId")
 
-                                // Create medication request with proper date format and the selected appointment ID
                                 val request = MedicationRequest(
                                     patientId = patientId,
                                     appointmentId = appointmentId,

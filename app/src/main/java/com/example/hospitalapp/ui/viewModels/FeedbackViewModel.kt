@@ -91,7 +91,6 @@ class FeedbackViewModel(
         viewModelScope.launch {
             feedbackDetailsUiState = BaseUiState.Loading
             try {
-                // Create a new FeedbackRequest with all required fields
                 val feedbackRequest = FeedbackRequest(
                     comments = feedback.comments,
                     diagnosis = feedback.diagnosis,

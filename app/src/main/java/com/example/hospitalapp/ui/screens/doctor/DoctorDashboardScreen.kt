@@ -43,13 +43,11 @@ fun DoctorDashboardScreen(
     var selectedTab by remember { mutableStateOf(0) }
     val tabs = listOf("Overview", "Patients", "Appointment")
 
-    // Initialize required data
     LaunchedEffect(doctorId) {
         doctorViewModel.getDoctorById(doctorId)
         doctorViewModel.getDoctorPatients(doctorId)
     }
 
-    // Observe UI States
     val doctorState = doctorViewModel.doctorDetailsUiState
     val patientsState = doctorViewModel.doctorPatientsUiState
 
@@ -387,7 +385,6 @@ private fun AppointmentsTab(
     doctor: DoctorResponse,
     modifier: Modifier = Modifier
 ) {
-    // This tab will be implemented with appointments integration
     Box(
         modifier = modifier
             .fillMaxSize()

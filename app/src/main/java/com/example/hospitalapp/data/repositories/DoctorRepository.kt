@@ -52,7 +52,6 @@ class DoctorRepositoryImpl @Inject constructor(
 
     @RequiresApi(Build.VERSION_CODES.O)
     override suspend fun createDoctorDetails(userId: Long, request: DoctorRequest): DoctorResponse {
-        // Verify the user exists and has DOCTOR role
         val user = userDao.getUserById(userId)
             ?: throw IllegalStateException("User not found")
 
@@ -124,11 +123,9 @@ class DoctorRepositoryImpl @Inject constructor(
         }
 
         userDao.deleteUser(user)
-        // DoctorDetail will be deleted automatically due to CASCADE
     }
 
     override suspend fun getDoctorPatients(id: Long): List<PatientResponse> {
-        // First verify the doctor exists
         getDoctorById(id)
 
         return appointmentDao.getDoctorPatients(id).mapNotNull { user ->

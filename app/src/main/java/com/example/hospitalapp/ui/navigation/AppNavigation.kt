@@ -10,6 +10,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.example.hospitalapp.data.datastore.UserPreferences
+import com.example.hospitalapp.ui.screens.admin.AdminDashboardScreen
 import com.example.hospitalapp.ui.screens.doctor.*
 import com.example.hospitalapp.ui.screens.doctor.detail.*
 import com.example.hospitalapp.ui.screens.patient.*
@@ -48,6 +49,9 @@ fun AppNavigation(
                 "DOCTOR" -> navController.navigate(DoctorDashboardNav(user.id)) {
                     popUpTo(LoginScreenNav) { inclusive = true }
                 }
+                "ADMIN" -> navController.navigate(AdminDashboardNav) {
+                    popUpTo(LoginScreenNav) { inclusive = true }
+                }
             }
         }
     }
@@ -60,7 +64,6 @@ fun AppNavigation(
             LoginScreen(
                 userViewModel = userViewModel,
                 onLoginSuccess = { role ->
-                    // Using coroutine scope to call suspend function
                     coroutineScope.launch {
                         val userId = userPreferences.getUserId()
                         userId?.let {
@@ -69,6 +72,9 @@ fun AppNavigation(
                                     popUpTo(LoginScreenNav) { inclusive = true }
                                 }
                                 "DOCTOR" -> navController.navigate(DoctorDashboardNav(userId)) {
+                                    popUpTo(LoginScreenNav) { inclusive = true }
+                                }
+                                "ADMIN" -> navController.navigate(AdminDashboardNav) {
                                     popUpTo(LoginScreenNav) { inclusive = true }
                                 }
                                 else -> Log.e("Navigation", "Unknown role: $role")
@@ -98,6 +104,9 @@ fun AppNavigation(
                             navController.navigate(DoctorInfoNav(userId)) {
                                 popUpTo(SignupScreenNav) { inclusive = true }
                             }
+                        }
+                        "ADMIN" -> navController.navigate(AdminDashboardNav) {
+                            popUpTo(LoginScreenNav) { inclusive = true }
                         }
                         else -> Log.e("Navigation", "Unknown role: $role")
                     }
@@ -243,6 +252,14 @@ fun AppNavigation(
             VitalsChartScreen(
                 patientId = args.patientId,
                 vitalsViewModel = vitalsViewModel,
+                navController = navController
+            )
+        }
+
+        composable<AdminDashboardNav> {
+            AdminDashboardScreen(
+                userViewModel = userViewModel,
+                userPreferences = userPreferences,
                 navController = navController
             )
         }

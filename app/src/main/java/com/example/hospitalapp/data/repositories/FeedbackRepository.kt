@@ -77,7 +77,6 @@ class FeedbackRepositoryImpl @Inject constructor(
 
     @RequiresApi(Build.VERSION_CODES.O)
     override suspend fun createFeedback(feedback: FeedbackRequest): FeedbackResponse {
-        // Verify appointment exists and is completed
         val appointment = appointmentDao.getAppointmentById(feedback.appointmentId)
             ?: throw IllegalStateException("Appointment not found")
 
@@ -85,7 +84,6 @@ class FeedbackRepositoryImpl @Inject constructor(
             throw IllegalStateException("Cannot add feedback for non-completed appointment")
         }
 
-        // Check if feedback already exists
         if (feedbackDao.hasFeedback(feedback.appointmentId)) {
             throw IllegalStateException("Feedback already exists for this appointment")
         }

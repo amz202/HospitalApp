@@ -33,7 +33,6 @@ fun AppointmentSelectionDialog(
     onSelect: (AppointmentResponse) -> Unit,
     onDismiss: () -> Unit
 ) {
-    // Fetch patient's appointments
     LaunchedEffect(patientId) {
         appointmentViewModel.getPatientAppointments(patientId)
     }

@@ -57,14 +57,12 @@ fun RecordVitalsDialog(
         bloodSugar.isNotEmpty() && (bloodSugar.toDoubleOrNull() == null || bloodSugar.toDouble() !in 30.0..500.0)
     }
 
-    // Check if form is valid
     val isFormValid = remember(
         heartRate, systolicPressure, diastolicPressure, temperature,
         oxygenSaturation, respiratoryRate, bloodSugar,
         heartRateError, systolicError, diastolicError, tempError,
         oxygenError, respRateError, bloodSugarError
     ) {
-        // At least one field must be filled and all filled fields must be valid
         (heartRate.isNotEmpty() || systolicPressure.isNotEmpty() || diastolicPressure.isNotEmpty() ||
                 temperature.isNotEmpty() || oxygenSaturation.isNotEmpty() || respiratoryRate.isNotEmpty() ||
                 bloodSugar.isNotEmpty()) &&
@@ -94,7 +92,6 @@ fun RecordVitalsDialog(
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                // Heart Rate Field
                 OutlinedTextField(
                     value = heartRate,
                     onValueChange = { heartRate = it },
@@ -109,8 +106,6 @@ fun RecordVitalsDialog(
                     },
                     singleLine = true
                 )
-
-                // Blood Pressure Fields (side by side)
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)

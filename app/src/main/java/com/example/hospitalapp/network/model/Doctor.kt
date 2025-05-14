@@ -19,8 +19,8 @@ data class DoctorResponse(
 
 @Serializable
 data class DoctorRequest(
-    val fName: String, // Changed from firstName
-    val lName: String, // Changed from lastName
+    val fName: String,
+    val lName: String,
     val email: String,
     val phoneNumber: String,
     val specialization: String,

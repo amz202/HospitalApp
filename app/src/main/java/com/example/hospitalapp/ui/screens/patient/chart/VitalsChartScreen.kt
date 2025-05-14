@@ -170,7 +170,6 @@ fun VitalsChartScreen(
 
                         Spacer(modifier = Modifier.height(24.dp))
 
-                        // Stats and values display
                         VitalStatsCard(
                             vitals = vitals,
                             vitalType = selectedVitalType,
@@ -217,12 +216,10 @@ fun VitalsChart(
         return
     }
 
-    // Prepare xLabels for chart
     val xLabels = filteredVitals.map {
         LocalDateTime.parse(it.recordedAt).format(DateTimeFormatter.ofPattern("MM/dd"))
     }
 
-    // Chart color based on vital type
     val chartColor = when (vitalType) {
         VitalType.HEART_RATE -> Color(0xFFE57373) // Red for heart rate
         VitalType.TEMPERATURE -> Color(0xFFFFB74D) // Orange for temperature

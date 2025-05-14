@@ -76,7 +76,7 @@ class AdminViewModel(
             adminsUiState = BaseUiState.Loading
             try {
                 adminRepository.createAdmin(admin)
-                getAdmins() // Refresh the list
+                getAdmins()
             } catch (e: Exception) {
                 adminsUiState = BaseUiState.Error
             }

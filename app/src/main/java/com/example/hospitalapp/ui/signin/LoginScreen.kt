@@ -21,17 +21,13 @@ fun LoginScreen(
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
 
-    // Collect error message
     val errorMessage by userViewModel.errorMessage.collectAsState()
 
-    // Observe login state
     val loginState = userViewModel.loginState
 
-    // Show error status
     val showError = loginState is BaseUiState.Error ||
             (errorMessage != null && errorMessage?.contains("Invalid username or password") == true)
 
-    // Handle successful login
     LaunchedEffect(loginState) {
         if (loginState is BaseUiState.Success && loginState.data != null) {
             onLoginSuccess(loginState.data.role)

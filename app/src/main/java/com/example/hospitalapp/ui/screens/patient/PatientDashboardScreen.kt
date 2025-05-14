@@ -34,7 +34,6 @@ fun PatientDashboardScreen(
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
 
-    // Initialize required data
     LaunchedEffect(patientId) {
         patientViewModel.getPatientById(patientId)
         vitalsViewModel.getVitalsByPatient(patientId)
@@ -42,7 +41,6 @@ fun PatientDashboardScreen(
         appointmentViewModel.getPatientAppointments(patientId)
     }
 
-    // Observe UI States
     val patientState = patientViewModel.patientDetailsUiState
 
     Scaffold(
