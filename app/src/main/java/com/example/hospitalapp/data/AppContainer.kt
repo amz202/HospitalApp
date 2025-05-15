@@ -39,6 +39,7 @@ interface AppContainer {
     val vitalsRepository: VitalsRepository
     val reportRepository: ReportRepository
     val userRepository: UserRepository
+    val messageRepository: MessageRepository
 }
 
 class DefaultAppContainer(private val context: Context) : AppContainer {
@@ -75,6 +76,7 @@ class DefaultAppContainer(private val context: Context) : AppContainer {
     private val vitalsDao: VitalsDao by lazy { database.vitalsDao() }
     private val reportDao: ReportDao by lazy { database.reportDao() }
     private val feedbackDao: FeedbackDao by lazy { database.feedbackDao() }
+    private val messageDao: MessageDao by lazy { database.messageDao() }
 
     // Repositories
     override val reportRepository: ReportRepository by lazy {
@@ -98,7 +100,12 @@ class DefaultAppContainer(private val context: Context) : AppContainer {
             doctorDetailDao = doctorDao,
         )
     }
-
+    override val messageRepository: MessageRepository by lazy {
+        MessageRepositoryImpl(
+            messageDao = messageDao,
+            userDao = userDao
+        )
+    }
     override val adminRepository: AdminRepository by lazy {
         AdminRepositoryImpl(apiService = apiService)
     }

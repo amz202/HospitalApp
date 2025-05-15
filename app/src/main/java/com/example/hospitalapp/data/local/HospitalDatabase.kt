@@ -18,7 +18,8 @@ import com.example.hospitalapp.data.local.entities.*
         MedicationEntity::class,
         VitalsEntity::class,
         ReportEntity::class,
-        FeedbackEntity::class
+        FeedbackEntity::class,
+        MessageEntity::class
     ],
     version = 1,
     exportSchema = false
@@ -33,6 +34,7 @@ abstract class HospitalDatabase : RoomDatabase() {
     abstract fun vitalsDao(): VitalsDao
     abstract fun reportDao(): ReportDao
     abstract fun feedbackDao(): FeedbackDao
+    abstract fun messageDao(): MessageDao
 
     companion object {
         private var Instance: HospitalDatabase? = null

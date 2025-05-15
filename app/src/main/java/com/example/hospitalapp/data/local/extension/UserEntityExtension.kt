@@ -127,7 +127,22 @@ suspend fun MedicationEntity.toMedicationResponse(
         updatedAt = updatedAt
     )
 }
+suspend fun MessageEntity.toMessageResponse(userDao: UserDao): MessageResponse {
+    val sender = userDao.getUserById(senderId)?.toUserResponse()
+    val receiver = userDao.getUserById(receiverId)?.toUserResponse()
 
+    return MessageResponse(
+        id = id,
+        senderId = senderId,
+        senderName ="Sender",
+        receiverId = receiverId,
+        receiverName = "Receiver",
+        content = content,
+        timestamp = timestamp,
+        isRead = isRead,
+        attachment = attachment
+    )
+}
 // Report extensions
 suspend fun ReportEntity.toReportResponse(
     userDao: UserDao,
