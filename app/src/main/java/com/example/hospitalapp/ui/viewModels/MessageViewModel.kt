@@ -52,10 +52,8 @@ class MessageViewModel(
                 val result = messageRepository.getConversation(userId1, userId2)
                 conversationUiState = BaseUiState.Success(result)
 
-                // Mark messages as read when conversation is opened
                 messageRepository.markMessagesAsRead(userId1, userId2)
 
-                // Update unread count after marking messages as read
                 updateUnreadCount(userId1)
             } catch (e: Exception) {
                 conversationUiState = BaseUiState.Error
