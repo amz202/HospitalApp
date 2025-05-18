@@ -4,25 +4,63 @@ HospitalApp is a healthcare management Android application developed using Kotli
 
 ---
 
-## Key Features
+## Demo Video
 
-### For Patients
-- Health Dashboard: View vitals, medications, appointments, and summaries
-- Appointment Management: Schedule, view, and manage upcoming appointments
-- Medication Tracking: Monitor current and past medications with dosage details
-- Health Reports: Generate and view detailed health summaries
-- Emergency Access: Quick trigger for emergency alert functionality
+Watch the demo here: [Project Demo (Google Drive)](https://drive.google.com/drive/folders/1JqrRPiPh69ajVC1ynwyC4S5B_ScH0LQk?usp=sharing)
 
-### For Doctors
-- Patient Overview: View assigned patients with complete medical details
-- Vitals Recording: Record and monitor patients’ vital signs
-- Prescription Management: Prescribe and manage medications per appointment
-- Appointment Handling: View and manage doctor-specific appointments
-- Feedback System: Access feedback from patients after consultations
+---
 
-### For Admins
-- User Directory: View all doctors and patients in the system
-- Login Simulation: Tap on any user to simulate logging into their account and view their dashboard
+## GUI Screenshot
+
+<table>
+  <tr>
+    <td>
+      <img src="https://github.com/user-attachments/assets/af90c5bd-a929-4084-a5ca-bfbcaeda4094" width="300"/>
+    </td>
+    <td>
+      <img src="https://github.com/user-attachments/assets/67f16c15-3a9c-4744-b3d8-a7f2530b52c3" width="300"/>
+    </td>
+  </tr>
+</table>
+
+---
+
+## Installation Guide
+
+Follow these simple steps to set up and run the project:
+
+### 1. Install Android Studio
+- Download from [https://developer.android.com/studio](https://developer.android.com/studio)
+- Install all recommended components (SDK, Emulator, etc.)
+
+### 2. Open the Project
+- Clone the repository or download the ZIP
+- Open it in Android Studio (`File > Open`)
+
+### 3. Run on Emulator
+- Go to `Tools > Device Manager` and create a virtual device
+- Press the green Run button to launch the app on emulator
+
+> The app uses a local Room database and runs completely offline.
+
+---
+
+## Patient Features
+- View vitals, medications, appointments, and summaries
+- Schedule and manage appointments
+- Track current and past medications
+- Generate health summaries
+- Emergency alert functionality
+
+## Doctor Features
+- View assigned patients and their medical details
+- Record vitals and prescribe medication
+- Manage doctor-specific appointments
+- View feedback from patients
+
+## Admin Features
+- View all users (doctors and patients)
+- Simulate login to any account to access their dashboard
 
 ---
 
@@ -31,34 +69,33 @@ HospitalApp is a healthcare management Android application developed using Kotli
 - Language: Kotlin
 - UI: Jetpack Compose (Material 3)
 - Architecture: MVVM
-- Database: Room (no remote API used)
-- Data Flow: ViewModels using StateFlow and LiveData
-- Navigation: Jetpack Navigation with argument-based routing
-- Local Persistence: Fully offline access via Room DAOs
-- Session Management: Simulated login flow based on Room data
+- Database: Room (Offline Only)
+- Navigation: Jetpack Navigation with arguments
+- Session: Simulated login via Room-stored users
 
 ---
 
-## Project Modules
+## Project Structure
 
 | Layer        | Description                                      |
 |--------------|--------------------------------------------------|
-| `entities`   | Room entities for users, vitals, appointments, etc. |
+| `entities`   | Room entities like users, vitals, appointments   |
 | `dao`        | Data access interfaces for Room database         |
-| `repository` | Business logic layer for ViewModels              |
-| `viewmodels` | Screen-specific state management and logic       |
-| `ui`         | Compose-based screens and navigation flow        |
+| `repository` | Business logic between DAO and ViewModels        |
+| `viewmodels` | Screen-specific logic and state handling         |
+| `ui`         | Compose screens and navigation                   |
 
 ---
 
 ## Usage Scenarios
 
-- Patients can view and manage their complete health records
-- Doctors can handle assigned patients, record vitals, and prescribe medication
-- Admins can access any user account to view their dashboard data directly
+- Patients manage health records
+- Doctors handle appointments and prescriptions
+- Admins simulate logins to access any user's dashboard
 
 ---
 
 ## License
 
-This project is built for educational and demonstration purposes only.
+This project is for educational use only.
+
